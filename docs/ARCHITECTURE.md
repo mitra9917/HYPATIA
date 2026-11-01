@@ -39,9 +39,8 @@
               └──────────────────────────────┘
               ┌──────────────────────────────┐
               │ Object / video store         │
-              │ (S3-compatible / local disk  │
-              │  for hackathon; ephemeral-   │
-              │  aware on Render)            │
+              │ R2 or S3 + Modal Volumes     │
+              │ (weights / fixture cache)    │
               └──────────────────────────────┘
 ```
 
@@ -138,7 +137,7 @@ Notebook
   session_id, markdown, export_uri
 ```
 
-Hackathon persistence: **Postgres** (Render managed or Neon/Vercel). Media: local `./data` in Docker volume for demo; S3/R2 if time.
+Hackathon persistence: **Postgres** (Neon or Supabase). Media: **R2/S3**. Open-weight caches: **Modal Volumes**. Local `./data` only for docker-compose dev.
 
 ## 6. Repository layout (target)
 
@@ -162,8 +161,8 @@ hypatia/
 ├── demo/                    # script, shot list, captions
 ├── docs/                    # this documentation set
 ├── scripts/                 # smoke tests, cost report, seed library
-├── render.yaml              # Blueprint for Render deploy
-├── docker-compose.yml
+├── modal_app.py             # Modal deploy entry (API + GPU + sandboxes)
+├── docker-compose.yml       # local dev
 └── README.md
 ```
 
@@ -185,7 +184,7 @@ Monorepo is fine for a 10-day hack; keep Python science stack in `services/api` 
 | GET | `/api/sessions/{id}/events` | SSE progress for UI |
 | POST | `/api/voice/turn` | Transcribe + PI reply |
 | GET | `/api/library/laws` | Learned laws |
-| GET | `/api/health` | Liveness for Render |
+| GET | `/api/health` | Liveness for Modal / Vercel proxy |
 
 ## 8. Meta Model API integration rules
 

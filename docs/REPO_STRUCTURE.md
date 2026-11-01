@@ -8,8 +8,8 @@ Target layout for the full-stack HYPATIA monorepo. Phase 1 may start with the **
 .
 ├── AGENTS.md                 # conventions for coding agents
 ├── README.md                 # product + links + evals + built-during
-├── render.yaml               # Render Blueprint
-├── docker-compose.yml
+├── modal_app.py              # or services/api/modal_app.py — primary deploy
+├── docker-compose.yml        # local dev
 ├── .env.example
 ├── .github/
 │   └── workflows/
@@ -81,7 +81,7 @@ If packaging slows us down:
 ├── evals/
 ├── scripts/
 ├── docker-compose.yml
-└── render.yaml
+└── (no Render Blueprint — see docs/DEPLOYMENT.md)
 ```
 
 Promote to `packages/` only when imports get messy.

@@ -102,7 +102,7 @@ Full 10-day ideal plan is preserved as Appendix A for narrative / README.
 | P4.3 | Cell time-lapse path (reuse engine) | Vision/Science |
 | P4.4 | VERITAS module on AI fall clip | Science |
 | P4.5 | Computer-use PhET path (stretch) | Agent |
-| P4.6 | Render Blueprint deploy + health pings | Product |
+| P4.6 | Modal + Vercel deploy + health pings / warm containers | Product |
 | P4.7 | Evals table in README | Science |
 | P4.8 | Shoot + edit 3:00 demo video | Product |
 | P4.9 | Submission package (form fields, links) | All |

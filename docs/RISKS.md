@@ -8,7 +8,8 @@
 | Motion blur / bad lighting | Med | Bad tracks | 60fps phone, bright light, high-contrast bob; backup clips |
 | Muse Wonder cost blows $150 credits | Med | Can't iterate | Wonder for plan only; Spark Contributor for volume; Glimmer swarm |
 | Near-identical academic project appears | Low–Med | Novelty attack | Lead with imagination audit + self-tooling + active loop |
-| Render free spin-down during judging | High | Broken link | Uptime pings; paid bump; video is primary artifact |
+| Modal/Vercel cold start during judging | Med | Slow first click | `min_containers=1` on Modal API/Glimmer Nov 4–9; fixture fallback; video is primary artifact |
+| Modal GPU credits exhausted | Med | No Glimmer | Spark substitute swarm; Baseten/Fireworks failover; honest README note |
 | Partner GPU (Glimmer) not ready | Med | Open-weights story weak | CPU stub swarm with Spark drafts; document intent + partial run |
 | Computer-use flaky on PhET | High | Stretch fails | Cut from demo; keep HITL experiment ask |
 | Team bandwidth (≤4 / solo) | High | Scope creep | Kill order: computer-use → fine-tune → cells → VERITAS → voice → ghost → first law |

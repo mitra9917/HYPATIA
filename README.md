@@ -69,7 +69,7 @@ Full index: [`docs/INDEX.md`](docs/INDEX.md)
 | [Architecture](docs/ARCHITECTURE.md) | Agents, APIs, data model, diagrams |
 | [Win strategy](docs/WIN_STRATEGY.md) | How we clear finals |
 | [Build plan](docs/BUILD_PLAN.md) | Phases P0–P4, milestones, issue IDs |
-| [Deployment](docs/DEPLOYMENT.md) | Render / Modal / reliability modes |
+| [Deployment](docs/DEPLOYMENT.md) | Modal-first (Vercel + GPU Volumes + R2/S3); not Render free |
 | [Demo script](demo/DEMO_SCRIPT.md) | 3-minute shot list |
 | [Evals](docs/EVALS.md) / [Risks](docs/RISKS.md) | Proof + kill order |
 | [AGENTS.md](AGENTS.md) | Conventions for contributors & coding agents |

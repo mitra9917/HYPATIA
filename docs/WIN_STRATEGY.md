@@ -70,7 +70,7 @@ See BUILD_PLAN.md for engineering milestones.
 
 ## 5. Live finals protocol (if top 5)
 
-- Cold start from deployed URL + local failover Docker.
+- Cold start from **Vercel → Modal** URL; warm Modal containers beforehand; local Docker failover.
 - Script memorized; one person drives, one watches metrics.
 - Pre-warm Meta `file_id`s; never upload raw 4K on stage.
 - If judge asks "is the LLM just fitting?": answer with held-out gate + rival elimination + experiment design.

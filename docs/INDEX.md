@@ -10,7 +10,7 @@ Read in this order before opening issues or coding:
 | 4 | [META_TOOLING.md](./META_TOOLING.md) | How every Meta model is used (25% category) |
 | 5 | [WIN_STRATEGY.md](./WIN_STRATEGY.md) | Campaign to clear finals and win Indie track |
 | 6 | [BUILD_PLAN.md](./BUILD_PLAN.md) | Phases, milestones, issue IDs, DoD |
-| 7 | [DEPLOYMENT.md](./DEPLOYMENT.md) | Render/Modal deploy, reliability modes |
+| 7 | [DEPLOYMENT.md](./DEPLOYMENT.md) | Modal-first deploy (Vercel + GPU + R2/S3); AWS as later path |
 | 8 | [EVALS.md](./EVALS.md) | Metrics and harness |
 | 9 | [RISKS.md](./RISKS.md) | Failures, kill order, live incident runbook |
 | 10 | [REPO_STRUCTURE.md](./REPO_STRUCTURE.md) | Monorepo layout |

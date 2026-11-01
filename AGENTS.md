@@ -15,8 +15,8 @@ Read `docs/INDEX.md` before large changes.
 3. **LLM proposes, maths decides** — never accept a law without held-out scoring.
 4. **Demo reliability** — every Meta-facing path needs a fixture fallback.
 5. **Secrets stay out of git** — `.env` only; document keys in `.env.example`.
-6. **Render bind** — HTTP servers listen on `0.0.0.0:$PORT`.
-7. **Ephemeral disk** — do not treat local FS as durable storage in production.
+6. **Public HTTP bind** — if we expose a classic web server, listen on `0.0.0.0:$PORT`; prefer Modal ASGI web endpoints for the API.
+7. **No ephemeral disk as source of truth** — durable state in Postgres + R2/S3 + Modal Volumes (weights).
 
 ## Stack defaults
 
@@ -28,7 +28,7 @@ Read `docs/INDEX.md` before large changes.
 | Meta API | Responses API @ `https://api.meta.ai/v1` |
 | SAM decode | `meta_sam_parser` (Python) / `@meta-sam/parser` (TS) |
 | Science | NumPy, SciPy, OpenCV, PySR |
-| Deploy | Render Blueprint + optional Modal sandboxes |
+| Deploy | Vercel (web) + Modal (API/GPU/Sandboxes) + Neon/Supabase + R2/S3 |
 
 ## Model routing
 
