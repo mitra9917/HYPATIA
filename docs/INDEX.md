@@ -22,10 +22,21 @@ Also:
 - [../AGENTS.md](../AGENTS.md) — coding conventions for humans and agents
 - [../README.md](../README.md) — public face of the repo
 
-## Next action after docs merge
+## Implementation status
 
-1. Create GitHub milestones M0–M4  
-2. File Phase 1 issues from BUILD_PLAN  
-3. Scaffold `apps/web` + `services/api` + `docker-compose.yml`  
-4. Smoke-test Meta Model API keys from India  
-5. Record / collect test videos into `data/videos/` with `SOURCES.md`  
+Scaffold is in-repo:
+
+- `services/api` — FastAPI science loop (fixture E2E green; Meta live hooks)
+- `apps/web` — Next.js lab UI with ghost overlay
+- `services/api/modal_app.py` — Meta-partner Modal deploy
+- `infra/aws/` — AWS fallback notes (priority #2)
+- `docker-compose.yml` — local full stack
+
+## Next actions
+
+1. Set `MODEL_API_KEY`, run `python scripts/smoke_meta_api.py`  
+2. `modal deploy services/api/modal_app.py`  
+3. Wire real SAM video file tracking on uploads  
+4. Glimmer on Modal GPU / Baseten / Fireworks  
+5. Record demo videos + shoot 3:00 clip  
+6. AWS S3 bucket for media if not using only Modal Volumes  
