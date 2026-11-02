@@ -18,13 +18,10 @@ def test_session_document_roundtrip_json() -> None:
 
 @pytest.mark.skipif(not os.environ.get("DATABASE_URL", "").strip(), reason="DATABASE_URL not set")
 def test_postgres_store_survives_reload() -> None:
-    from hypatia.config import get_settings
+    url = os.environ["DATABASE_URL"].strip()
     from hypatia.db import run_migrations
     from hypatia.postgres_store import PostgresSessionStore
 
-    get_settings.cache_clear()
-    settings = get_settings()
-    url = settings.database_url.strip()
     run_migrations(url)
     store = PostgresSessionStore(url)
     session = Session(id="persist-test-1", status=SessionStatus.measuring, mode="live")

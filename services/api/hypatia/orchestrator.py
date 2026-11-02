@@ -14,6 +14,7 @@ from .pipeline import (
     _measure,
 )
 from .store import store
+from .session_events import publish
 
 # Ordered science loop (matches ARCHITECTURE §4)
 PIPELINE_STAGES: tuple[str, ...] = (
@@ -41,6 +42,22 @@ class StageGuardError(ValueError):
     def __init__(self, stage: str, message: str) -> None:
         self.stage = stage
         super().__init__(message)
+
+
+def _session_status_value(session: Session) -> str:
+    return session.status.value if hasattr(session.status, "value") else str(session.status)
+
+
+def emit_stage_event(session: Session, event: str, stage: str, **extra: object) -> None:
+    """Append to session log and push to SSE subscribers."""
+    data: dict[str, object] = {
+        "session_id": session.id,
+        "stage": stage,
+        "status": _session_status_value(session),
+        **extra,
+    }
+    session.events.append({"event": event, **data})
+    publish(session.id, event, data)
 
 
 def assert_stage_prerequisites(session: Session, stage: str) -> None:
@@ -97,6 +114,12 @@ async def run_pipeline_stage(
     if session.status == SessionStatus.failed:
         session.status = STAGE_TO_STATUS.get(stage, session.status)
 
+    target_status = STAGE_TO_STATUS.get(stage)
+    if target_status:
+        session.status = target_status
+    emit_stage_event(session, "stage_started", stage)
+    store.put(session)
+
     try:
         if stage == "observe":
             session = await run_observer(session, settings)
@@ -124,9 +147,11 @@ async def run_pipeline_stage(
         session = store.get(session_id) or session
         session.status = SessionStatus.failed
         session.error = str(exc)
-        session.events.append({"stage": "failed", "message": str(exc)[:240]})
+        emit_stage_event(session, "stage_failed", stage, error=str(exc)[:240])
         return store.put(session)
 
+    session = store.get(session_id) or session
+    emit_stage_event(session, "stage_completed", stage)
     return store.put(session)
 
 
