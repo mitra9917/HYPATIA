@@ -50,13 +50,13 @@ Use **Playbook #** from the **[Build Playbook project](https://github.com/users/
 
 | Playbook # | Issue | Title | Status |
 | ---: | ---: | --- | --- |
-| **58** | [**66**](https://github.com/mitra9917/HYPATIA/issues/66) | P4.14 Finals warm + health ping | this PR |
-| **59** | [**63**](https://github.com/mitra9917/HYPATIA/issues/63) | P4.11 GitHub Actions lint + fixture CI | this PR |
-| **60** | [**40**](https://github.com/mitra9917/HYPATIA/issues/40) | P4.7 Evals + Meta evidence in README | this PR |
-| **61** | [**67**](https://github.com/mitra9917/HYPATIA/issues/67) | P4.15 API cost report | this PR |
-| **62** | [**65**](https://github.com/mitra9917/HYPATIA/issues/65) | P4.13 Submission pack + landing | this PR |
+| **58** | [**66**](https://github.com/mitra9917/HYPATIA/issues/66) | P4.14 Finals warm + health ping | done (#96) |
+| **59** | [**63**](https://github.com/mitra9917/HYPATIA/issues/63) | P4.11 GitHub Actions lint + fixture CI | done (#96) |
+| **60** | [**40**](https://github.com/mitra9917/HYPATIA/issues/40) | P4.7 Evals + Meta evidence in README | done (#96) |
+| **61** | [**67**](https://github.com/mitra9917/HYPATIA/issues/67) | P4.15 API cost report | done (#96) |
+| **62** | [**65**](https://github.com/mitra9917/HYPATIA/issues/65) | P4.13 Submission pack + landing | done (#96) |
 
-**Next up:** playbook **63+**.
+**Next up:** playbook **63+** (issues #41, #42, …).
 
 ---
 
