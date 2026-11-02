@@ -20,6 +20,7 @@ Read in this order before opening issues or coding:
 Also:
 
 - [SYMBOLIC_FITTER.md](./SYMBOLIC_FITTER.md) — P2.1 SciPy pendulum g recovery (issue #19)
+- [GLIMMER_SWARM.md](./GLIMMER_SWARM.md) — P2.2 Glimmer theorist batch + providers (issue #20)
 - [../demo/DEMO_SCRIPT.md](../demo/DEMO_SCRIPT.md) — 3-minute video script
 - [../AGENTS.md](../AGENTS.md) — coding conventions for humans and agents
 - [../README.md](../README.md) — public face of the repo

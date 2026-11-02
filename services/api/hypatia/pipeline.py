@@ -86,13 +86,41 @@ async def _measure(session: Session, client: MetaClient, settings: Settings) -> 
 
 
 async def _hypothesize(session: Session, client: MetaClient, settings: Settings) -> None:
+    from .theorist import run_theorist_swarm_and_score
+
     session.status = SessionStatus.hypothesizing
     _event(session, "hypothesize", f"Rival theories via {settings.glimmer_provider} swarm + held-out scoring")
 
     track = session.tracks[0] if session.tracks else None
     points = track.points if track else synthesize_pendulum_track()
     length = next((p.length_m for p in points if p.length_m), 0.45) or 0.45
-    session.hypotheses = fit_rival_hypotheses(points, length)
+
+    try:
+        session.hypotheses, swarm, glimmer_log = run_theorist_swarm_and_score(
+            settings,
+            points,
+            length,
+            domain_hint=session.domain_hint,
+        )
+        session.meta_calls.append(glimmer_log)
+        ids = [c.get("form_id") for c in swarm.get("candidates", [])[:5]]
+        _event(
+            session,
+            "hypothesize",
+            f"Glimmer ({swarm.get('provider')}): {len(swarm.get('candidates', []))} rivals "
+            f"pre-screened → held-out gate ({', '.join(str(i) for i in ids if i)})",
+        )
+    except Exception as exc:  # noqa: BLE001
+        session.meta_calls.append(
+            {
+                "model": "muse-glimmer",
+                "provider": settings.glimmer_provider,
+                "ok": False,
+                "error": str(exc)[:200],
+            }
+        )
+        session.hypotheses = fit_rival_hypotheses(points, length)
+        _event(session, "hypothesize", f"Glimmer unavailable ({exc}); fixture rivals only")
 
     if client.enabled and session.mode in {"live", "hybrid"}:
         try:

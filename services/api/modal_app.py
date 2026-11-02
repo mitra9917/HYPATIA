@@ -63,15 +63,18 @@ def fastapi_app():
 )
 def glimmer_swarm(payload: dict) -> dict:
     """Open-weight hypothesis swarm placeholder — loads weights from Volume when present."""
-    # Partner path: swap in real Glimmer serving; stub keeps deploy green.
+    import sys
+
+    sys.path.insert(0, "/root")
+    from hypatia.glimmer import PENDULUM_RIVAL_POOL, normalize_candidate
+
     n = int(payload.get("n", 32))
+    domain = str(payload.get("domain", "mechanics.pendulum"))
+    k = max(3, min(n, len(PENDULUM_RIVAL_POOL)))
     return {
         "provider": "modal",
-        "candidates": [
-            {"form": "T = 2*pi*sqrt(L/g)", "prior": 0.55},
-            {"form": "T = k*L", "prior": 0.25},
-            {"form": "T = f(m)", "prior": 0.20},
-        ][: max(1, min(n, 3))],
+        "domain": domain,
+        "candidates": [normalize_candidate(dict(c)) for c in PENDULUM_RIVAL_POOL[:k]],
         "weights_mount": "/weights",
     }
 
