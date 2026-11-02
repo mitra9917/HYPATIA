@@ -8,6 +8,7 @@ import time
 from pathlib import Path
 
 from .config import FIXTURE_DIR, Settings, get_settings
+from .runtime_ops import resolve_fixture_mode
 from .meta_client import MetaClient
 from .meta_files import primary_video_file_id
 from .media_utils import session_media_size
@@ -181,7 +182,7 @@ async def run_measurer(session: Session, client: MetaClient, settings: Settings 
     track: Track | None = None
     source = "fixture"
 
-    if settings.effective_fixture_mode:
+    if resolve_fixture_mode(settings):
         track = load_cached_track(session.id, primary_prompt)
         if track is None:
             track = _build_fixture_track(
@@ -258,7 +259,7 @@ async def run_measurer(session: Session, client: MetaClient, settings: Settings 
         )
 
     session.tracks = [track]
-    if settings.effective_fixture_mode or session.mode in {"fixture", "hybrid"}:
+    if resolve_fixture_mode(settings) or session.mode in {"fixture", "hybrid"}:
         save_cached_track(session.id, primary_prompt, track)
 
     media_w, media_h = session_media_size(session)

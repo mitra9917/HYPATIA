@@ -2,7 +2,10 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ContributorModeBanner } from "@/components/ContributorModeBanner";
+import { EthicsConsentBanner } from "@/components/EthicsConsentBanner";
 import { FixtureModeBanner } from "@/components/FixtureModeBanner";
+import { LawLibraryPanel } from "@/components/LawLibraryPanel";
+import { OpsModeBanner } from "@/components/OpsModeBanner";
 import { GhostCanvas } from "@/components/GhostCanvas";
 import { PipelineStepper } from "@/components/PipelineStepper";
 import { SessionErrorPanel } from "@/components/SessionErrorPanel";
@@ -15,6 +18,7 @@ import {
   createSession,
   getSession,
   health,
+  notebookDownloadUrl,
   resumeSession,
   runSessionWithProgress,
   submitExperimentResult,
@@ -50,12 +54,17 @@ export default function HomePage() {
   const [healthInfo, setHealthInfo] = useState<HealthInfo | null>(null);
   const [activeStep, setActiveStep] = useState<StepperKey>("created");
   const [progressLabel, setProgressLabel] = useState<string | null>(null);
+  const [uploadConsent, setUploadConsent] = useState(false);
   const disconnectRef = useRef<(() => void) | null>(null);
 
-  useEffect(() => {
-    health()
+  function refreshHealth() {
+    void health()
       .then(setHealthInfo)
       .catch(() => setHealthInfo({ ok: false }));
+  }
+
+  useEffect(() => {
+    refreshHealth();
     return () => disconnectRef.current?.();
   }, []);
 
@@ -102,6 +111,10 @@ export default function HomePage() {
   }
 
   async function onRun(file?: File, source: "upload" | "webcam" | "fixture" = "fixture") {
+    if ((source === "upload" || source === "webcam") && !uploadConsent) {
+      setErr("Check the ethics consent box before upload or webcam capture.");
+      return;
+    }
     setBusy(true);
     setErr(null);
     setProgressLabel("Creating session…");
@@ -109,7 +122,9 @@ export default function HomePage() {
       const created =
         source === "fixture" && !file
           ? await createSession()
-          : await createSession(file, source === "webcam" ? "webcam" : "upload");
+          : await createSession(file, source === "webcam" ? "webcam" : "upload", {
+              uploadConsent: source === "fixture" ? true : uploadConsent,
+            });
       setSession(created);
       setActiveStep("created");
       attachEvents(created.id);
@@ -154,9 +169,11 @@ export default function HomePage() {
         tier={healthInfo?.contributor_policy?.observer_spark_tier}
       />
       <FixtureModeBanner
-        fixtureMode={Boolean(healthInfo?.fixture_mode)}
+        fixtureMode={Boolean(healthInfo?.fixture_mode ?? healthInfo?.ops?.fixture_mode)}
         fixtureRecord={Boolean(healthInfo?.fixture_record)}
       />
+      <OpsModeBanner ops={healthInfo?.ops} onModeChange={refreshHealth} />
+      <EthicsConsentBanner checked={uploadConsent} onChange={setUploadConsent} />
       <section className="hero shell">
         <p className="meta" style={{ marginBottom: "1.25rem" }}>
           META GLOBAL AI DEVELOPER HACKATHON · INDIE · PUSH THE FRONTIER
@@ -208,6 +225,15 @@ export default function HomePage() {
             busy={busy}
             onResume={session?.status === "failed" ? onResume : undefined}
           />
+        ) : null}
+
+        {session?.library_hint ? (
+          <p className="meta" style={{ marginBottom: "1rem" }}>
+            {session.library_hint.message}
+            {session.library_hint.matches?.[0]?.law_latex
+              ? ` · prior: ${session.library_hint.matches[0].law_latex}`
+              : ""}
+          </p>
         ) : null}
 
         {session && (
@@ -357,6 +383,16 @@ export default function HomePage() {
                     Gates: {session.law_gate.reasons.join("; ")}
                   </p>
                 ) : null}
+                {session?.status === "accepted" && session.notebook ? (
+                  <a
+                    className="btn secondary"
+                    style={{ marginTop: "0.5rem", display: "inline-block" }}
+                    href={notebookDownloadUrl(session.id)}
+                    download
+                  >
+                    Download notebook (.md)
+                  </a>
+                ) : null}
               </>
             ) : (
               <p className="meta">Accepted law + error bars land here after held-out rivalry.</p>
@@ -368,6 +404,7 @@ export default function HomePage() {
             </div>
           </div>
         </div>
+        <LawLibraryPanel />
       </section>
     </main>
   );

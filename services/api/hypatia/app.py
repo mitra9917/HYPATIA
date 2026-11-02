@@ -4,7 +4,7 @@ import asyncio
 
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, File, Form, HTTPException, Query, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, Query, UploadFile, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, PlainTextResponse, StreamingResponse
 
@@ -17,12 +17,15 @@ from .imagination_media import imagination_frame_path
 from .meta_client import MetaClient
 from .models import CreateSessionResponse, ExperimentResult, RunResponse, Session
 from .orchestrator import PIPELINE_STAGES, StageGuardError, run_pipeline_from, run_pipeline_stage
+from .notebook_export import build_notebook_export
 from .pipeline import create_session, run_full_pipeline
+from .runtime_ops import OpsMode, ops_mode_summary, resolve_fixture_mode, set_ops_mode
 from .scoring_gate import law_accept_gate
 from .science import propose_experiment
 from .session_events import format_sse, subscribe, unsubscribe
 from .store import init_store, store, store_kind
 from .voice import voice_turn
+from .voice_realtime import voice_realtime_ws
 
 settings = get_settings()
 
@@ -74,11 +77,13 @@ def health() -> dict:
             glimmer_probe = {"ok": True, "provider": g.get("provider"), "candidates": len(g.get("candidates", []))}
     except Exception as exc:  # noqa: BLE001
         glimmer_probe = {"ok": False, "provider": settings.glimmer_provider, "error": str(exc)[:200]}
+    ops = ops_mode_summary(settings)
     return {
         "ok": True,
         "service": "hypatia-api",
-        "fixture_mode": settings.effective_fixture_mode,
-        "replay_mode": settings.effective_fixture_mode,
+        "fixture_mode": ops["fixture_mode"],
+        "replay_mode": ops["fixture_mode"],
+        "ops": ops,
         "fixture_record": settings.fixture_record,
         "model_router": settings.model_router(),
         "contributor_policy": contributor_policy_summary(settings),
@@ -97,6 +102,8 @@ def health() -> dict:
 async def post_session(
     file: UploadFile | None = File(default=None),
     source_type: str | None = Form(default=None),
+    upload_consent: str = Form(default="false"),
+    consent_version: str = Form(default="hypatia-demo-2026"),
 ) -> CreateSessionResponse:
     raw = await file.read() if file is not None else None
     filename = file.filename if file is not None else "webcam-or-fixture"
@@ -106,8 +113,50 @@ async def post_session(
         source = source_type
     else:
         source = "upload"
-    session = await create_session(filename=filename, source_type=source, raw=raw)
+    if source in ("upload", "webcam") and upload_consent.lower() not in ("true", "1", "yes"):
+        raise HTTPException(
+            status_code=422,
+            detail="Upload/webcam requires ethics consent (upload_consent=true).",
+        )
+    consent_ok = upload_consent.lower() in ("true", "1", "yes") or source == "fixture"
+    session = await create_session(
+        filename=filename,
+        source_type=source,
+        raw=raw,
+        upload_consent=consent_ok,
+        consent_version=consent_version,
+    )
     return CreateSessionResponse(session=session)
+
+
+class OpsModeBody(BaseModel):
+    mode: OpsMode
+
+
+@app.post("/api/ops/mode")
+def post_ops_mode(body: OpsModeBody) -> dict:
+    """Flip fixture ↔ live ↔ hybrid without redeploy (Playbook #45 / #33)."""
+    if body.mode in (OpsMode.live, OpsMode.hybrid) and not settings.has_meta_key:
+        raise HTTPException(status_code=422, detail="MODEL_API_KEY required for live/hybrid ops mode")
+    set_ops_mode(body.mode)
+    return ops_mode_summary(get_settings())
+
+
+@app.get("/api/sessions/{session_id}/notebook.md")
+def get_notebook_markdown(session_id: str) -> PlainTextResponse:
+    session = store.get(session_id)
+    if not session:
+        raise HTTPException(404, "session not found")
+    if not session.notebook:
+        raise HTTPException(422, detail="accept law before notebook export")
+    text = build_notebook_export(session)
+    headers = {"Content-Disposition": f'attachment; filename="hypatia-{session_id[:8]}-notebook.md"'}
+    return PlainTextResponse(text, media_type="text/markdown; charset=utf-8", headers=headers)
+
+
+@app.websocket("/api/voice/realtime")
+async def voice_realtime(websocket: WebSocket) -> None:
+    await voice_realtime_ws(websocket)
 
 
 @app.get("/api/sessions/{session_id}/imagination/{index}/frame.png")
@@ -295,15 +344,21 @@ async def run_session(
 @app.get("/api/library/laws")
 def list_laws() -> dict:
     laws = []
-    for sid in store.list_ids():
+    for sid in sorted(store.list_ids()):
         s = store.get(sid)
         if s and s.notebook:
+            completed = sum(
+                1 for e in s.events if isinstance(e, dict) and e.get("event") == "stage_completed"
+            )
             laws.append(
                 {
                     "session_id": sid,
                     "law_latex": s.notebook.law_latex,
                     "params": s.notebook.params,
                     "mode": s.mode,
+                    "error_bars": s.notebook.error_bars,
+                    "stages_completed": completed,
+                    "time_to_law_index": completed,
                 }
             )
-    return {"laws": laws}
+    return {"laws": laws, "count": len(laws)}
