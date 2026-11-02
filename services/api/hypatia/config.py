@@ -24,6 +24,8 @@ class Settings(BaseSettings):
     meta_use_contributor: bool = False
 
     glimmer_provider: str = "stub"  # modal | baseten | fireworks | stub
+    glimmer_baseten_url: str = ""
+    glimmer_fireworks_url: str = ""
     baseten_api_key: str = ""
     fireworks_api_key: str = ""
 

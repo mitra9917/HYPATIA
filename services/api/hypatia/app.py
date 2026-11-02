@@ -4,6 +4,7 @@ from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import get_settings
+from .glimmer import run_glimmer_swarm
 from .meta_client import MetaClient
 from .models import CreateSessionResponse, RunResponse, Session
 from .pipeline import create_session, run_full_pipeline
@@ -30,11 +31,19 @@ app.add_middleware(
 @app.get("/api/health")
 def health() -> dict:
     client = MetaClient(settings)
+    glimmer_probe: dict = {"configured": settings.glimmer_provider}
+    try:
+        if settings.glimmer_provider == "stub":
+            g = run_glimmer_swarm(settings, n=3)
+            glimmer_probe = {"ok": True, "provider": g.get("provider"), "candidates": len(g.get("candidates", []))}
+    except Exception as exc:  # noqa: BLE001
+        glimmer_probe = {"ok": False, "provider": settings.glimmer_provider, "error": str(exc)[:200]}
     return {
         "ok": True,
         "service": "hypatia-api",
         "fixture_mode": settings.effective_fixture_mode,
         "glimmer_provider": settings.glimmer_provider,
+        "glimmer": glimmer_probe,
         "meta": client.health_ping() if settings.has_meta_key else {"meta": False, "reason": "no key"},
         "s3_configured": bool(settings.s3_bucket and settings.aws_access_key_id),
         "deploy_priority": ["meta_model_api", "modal", "baseten", "fireworks", "aws"],

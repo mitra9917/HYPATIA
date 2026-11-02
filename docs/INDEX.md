@@ -8,6 +8,7 @@ Read in this order before opening issues or coding:
 | 2 | [PRODUCT.md](./PRODUCT.md) | What HYPATIA does, users, capabilities, novelty |
 | 3 | [ARCHITECTURE.md](./ARCHITECTURE.md) | System design, agents, APIs, data model |
 | 4 | [META_TOOLING.md](./META_TOOLING.md) | How every Meta model is used (25% category) |
+| 4b | [META_COVERAGE_STATUS.md](./META_COVERAGE_STATUS.md) | Playbook #1 live matrix — scaffold vs verified |
 | 5 | [WIN_STRATEGY.md](./WIN_STRATEGY.md) | Campaign to clear finals and win Indie track |
 | 6 | [BUILD_PLAN.md](./BUILD_PLAN.md) | Phases, milestones, issue IDs, DoD |
 | 7 | [DEPLOYMENT.md](./DEPLOYMENT.md) | Modal-first deploy (Vercel + GPU + R2/S3); AWS as later path |

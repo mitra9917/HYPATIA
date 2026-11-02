@@ -29,6 +29,9 @@ data/videos/*.webm
 !data/videos/SOURCES.md
 demo/exports/*
 !demo/exports/.gitkeep
+demo/*.mp4
+demo/*.mov
+demo/*.webm
 
 # OS / IDE
 .DS_Store
