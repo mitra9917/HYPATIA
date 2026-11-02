@@ -20,15 +20,21 @@ fi
 echo "=== modal profile ==="
 modal profile current 2>/dev/null || { echo "WARN: run modal setup"; exit 0; }
 
+if [[ "${MODAL_INTEGRATION_VERIFY_LIVE:-}" != "1" ]]; then
+  echo "SKIP: cloud volume/secret check (set MODAL_INTEGRATION_VERIFY_LIVE=1 after you create them)"
+  echo "Done."
+  exit 0
+fi
+
 echo "=== modal volume list (hypatia-weights) ==="
-if timeout 15 modal volume list 2>/dev/null | grep -q hypatia-weights; then
+if modal volume list 2>/dev/null | grep -q hypatia-weights; then
   echo "ok: hypatia-weights"
 else
   echo "WARN: run: modal volume create hypatia-weights"
 fi
 
 echo "=== modal secret list (hypatia-secrets) ==="
-if timeout 15 modal secret list 2>/dev/null | grep -q hypatia-secrets; then
+if modal secret list 2>/dev/null | grep -q hypatia-secrets; then
   echo "ok: hypatia-secrets"
 else
   echo "WARN: run modal secret create hypatia-secrets (see docs/MODAL_INTEGRATION.md)"

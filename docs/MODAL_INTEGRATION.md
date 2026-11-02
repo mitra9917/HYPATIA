@@ -58,4 +58,10 @@ curl -s "$(modal app list | awk '/hypatia/{print $2}')/api/health" | head
 bash scripts/verify_modal_integration.sh
 ```
 
+Optional after you create volume/secret in Modal:
+
+```bash
+MODAL_INTEGRATION_VERIFY_LIVE=1 bash scripts/verify_modal_integration.sh
+```
+
 DoD: `modal secret list` shows **`hypatia-secrets`** and volume **`hypatia-weights`** exists (human step); repo script + tests prove scaffold is ready.
