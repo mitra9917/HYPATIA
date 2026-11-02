@@ -1,0 +1,10 @@
+{
+  "clip_id": "ai-fake-physics-01",
+  "expected_g_m_s2": 9.80665,
+  "measured_g_m_s2": 6.1,
+  "break_frame": 41,
+  "momentum_conserved": false,
+  "verdict": "not_physical",
+  "headline": "Acceleration ≠ g — likely synthetic physics break",
+  "detail": "Frame 41: implied a≈6.1 m/s² vs 9.8 m/s²; vertical momentum jump inconsistent with gravity-only fall."
+}

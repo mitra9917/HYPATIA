@@ -42,6 +42,7 @@ async def create_session(
     raw: bytes | None,
     upload_consent: bool = False,
     consent_version: str = "hypatia-demo-2026",
+    domain_hint: str | None = None,
 ) -> Session:
     settings = get_settings()
     sid = str(uuid.uuid4())
@@ -64,6 +65,7 @@ async def create_session(
         mode=_mode_for(settings),
         upload_consent=upload_consent,
         consent_version=consent_version,
+        domain_hint=domain_hint,
     )
     if upload_consent:
         from datetime import datetime, timezone
