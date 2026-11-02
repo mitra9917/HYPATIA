@@ -38,12 +38,38 @@ class TrajectoryPoint(BaseModel):
     length_m: float | None = None
 
 
+class BBoxNorm(BaseModel):
+    """Normalized 0–1 box for frontend overlay (x,y = top-left)."""
+
+    x: float
+    y: float
+    w: float
+    h: float
+
+
+class MaskFrame(BaseModel):
+    frame_index: int
+    t_s: float
+    bbox_norm: BBoxNorm
+    track_id: int = 0
+
+
+class FrameCostEstimate(BaseModel):
+    source_fps: float = 30.0
+    scientific_fps: float = 12.5
+    clip_duration_s: float = 4.0
+    frames_billed_estimate: int = 0
+
+
 class Track(BaseModel):
     object_name: str
     sam_prompt: str
     points: list[TrajectoryPoint] = Field(default_factory=list)
+    mask_frames: list[MaskFrame] = Field(default_factory=list)
     metres_per_pixel: float = 0.001
     fps: float = 30.0
+    source: str = "fixture"  # sam | fixture | hybrid
+    frame_cost: FrameCostEstimate | None = None
 
 
 class Hypothesis(BaseModel):

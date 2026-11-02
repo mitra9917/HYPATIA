@@ -12,7 +12,6 @@ from .models import (
     Notebook,
     Session,
     SessionStatus,
-    Track,
 )
 from .science import (
     audit_ghost,
@@ -43,7 +42,11 @@ async def create_session(*, filename: str | None, source_type: str, raw: bytes |
         dest = MEDIA_DIR / f"{sid}_{Path(filename).name}"
         dest.write_bytes(raw)
         path = str(dest)
-        await upload_bytes_to_s3(settings, f"uploads/{sid}/{Path(filename).name}", raw, "video/mp4")
+        try:
+            await upload_bytes_to_s3(settings, f"uploads/{sid}/{Path(filename).name}", raw, "video/mp4")
+        except Exception:  # noqa: BLE001
+            # S3 is optional; misconfigured AWS must not break session create.
+            pass
 
     session = Session(
         id=sid,
@@ -77,39 +80,9 @@ async def _observe(session: Session, client: MetaClient, settings: Settings) -> 
 
 
 async def _measure(session: Session, client: MetaClient, settings: Settings) -> None:
-    session.status = SessionStatus.measuring
-    _event(session, "measure", "SAM 3.1 tracking → metres (or fixture trajectories)")
+    from .measurer import run_measurer
 
-    prompts = session.scene.sam_prompts if session.scene else ["pendulum bob"]
-    length_m = 0.45
-    points = synthesize_pendulum_track(length_m=length_m)
-
-    # Attempt live SAM only as a logged probe; numerical tracks still from calibrated synthesis
-    # until real video decoding is wired for the uploaded file.
-    if client.enabled and session.mode == "live":
-        try:
-            _, log = client.segment_video_stub_prompt(
-                prompts[0],
-                file_id=primary_video_file_id(session),
-            )
-            session.meta_calls.append(log)
-            _event(session, "measure", "SAM probe succeeded — using calibrated track extraction")
-        except Exception as exc:  # noqa: BLE001
-            session.meta_calls.append({"model": settings.meta_sam_model, "ok": False, "error": str(exc)[:160]})
-            _event(session, "measure", f"SAM live probe unavailable ({exc}); calibrated fixture track")
-            session.mode = "hybrid"
-
-    session.tracks = [
-        Track(
-            object_name="pendulum bob",
-            sam_prompt=prompts[0],
-            points=points,
-            metres_per_pixel=0.0012,
-            fps=30.0,
-        )
-    ]
-    _event(session, "measure", f"Trajectory ready: {len(points)} samples, L≈{length_m} m")
-    store.put(session)
+    await run_measurer(session, client, settings)
 
 
 async def _hypothesize(session: Session, client: MetaClient, settings: Settings) -> None:

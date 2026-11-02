@@ -45,7 +45,7 @@ Update this file when a row moves stage; mirror checkboxes on #44.
 | Spark Contributor | `…-contributor` | SCAFFOLD | `config.observer_model` | #54, #2 | Cost routing for observer loops |
 | Muse Wonder (PI) | `muse-wonder-1.0` | SCAFFOLD | `pipeline._hypothesize`, `_experiment` | #21, #30 | PI narration + experiment phrasing |
 | Muse Image | `muse-image-1.0` | SCAFFOLD | `meta_client.generate_image`, `pipeline._imagine` | #27 | Ghost / predicted frame |
-| SAM 3.1 | `sam-3.1` | SCAFFOLD | `meta_client.segment_video_stub_prompt` | #13, #28, #51 | Masks → SI trajectories + audit |
+| SAM 3.1 | `sam-3.1` | **MEASURER (P1.4)** | `hypatia/measurer.py`, `sam_decode.py` (stub until #51) | #13, #28, #51 | Masks → SI trajectories + audit |
 | Muse Voice | `muse-voice-transcribe-1.0` | NOT | (no `/api/voice/turn` yet) | #32, #59 | Hands-free experiment Q&A |
 
 ## Open weights

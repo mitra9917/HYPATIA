@@ -45,5 +45,17 @@ export type Session = {
   } | null;
   events: { stage: string; message: string }[];
   meta_calls: Record<string, unknown>[];
+  tracks?: {
+    object_name: string;
+    sam_prompt: string;
+    points: { t: number; x_m?: number; y_m?: number; angle_rad?: number }[];
+    mask_frames: {
+      frame_index: number;
+      t_s: number;
+      bbox_norm: { x: number; y: number; w: number; h: number };
+    }[];
+    source: string;
+    frame_cost?: { frames_billed_estimate: number; scientific_fps: number } | null;
+  }[];
   error?: string | null;
 };
