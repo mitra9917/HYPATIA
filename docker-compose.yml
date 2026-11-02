@@ -32,6 +32,12 @@ services:
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
       S3_BUCKET: ${S3_BUCKET:-}
       DATABASE_URL: postgresql://hypatia:hypatia@db:5432/hypatia
+    command:
+      [
+        "sh",
+        "-c",
+        "python -m hypatia.db migrate && exec uvicorn hypatia.app:app --host 0.0.0.0 --port 8000",
+      ]
     volumes:
       - ./data:/app/data
       - ./services/api/hypatia:/app/hypatia

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
@@ -10,14 +12,22 @@ from .meta_client import MetaClient
 from .models import CreateSessionResponse, RunResponse, Session
 from .orchestrator import PIPELINE_STAGES, StageGuardError, run_pipeline_from, run_pipeline_stage
 from .pipeline import create_session, run_full_pipeline
-from .store import store
+from .store import init_store, store, store_kind
 
 settings = get_settings()
+
+
+@asynccontextmanager
+async def lifespan(_app: FastAPI):
+    init_store(settings)
+    yield
+
 
 app = FastAPI(
     title="HYPATIA API",
     description="The camera that does science — Meta Model API + partner open weights",
     version="0.1.0",
+    lifespan=lifespan,
 )
 
 origins = [o.strip() for o in settings.cors_origins.split(",") if o.strip()]
@@ -61,7 +71,7 @@ def health() -> dict:
         "meta": client.health_ping() if settings.has_meta_key else {"meta": False, "reason": "no key"},
         "s3_configured": bool(settings.s3_bucket and settings.aws_access_key_id),
         "database_configured": bool(settings.database_url.strip()),
-        "session_store": "memory",
+        "session_store": store_kind(),
         "deploy_priority": ["meta_model_api", "modal", "baseten", "fireworks", "aws"],
     }
 

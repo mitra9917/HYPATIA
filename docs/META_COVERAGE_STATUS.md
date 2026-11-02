@@ -76,7 +76,7 @@ Update this file when a row moves stage; mirror checkboxes on #44.
 | Meta Model API key | HUMAN | **#2** ← next |
 | Modal | HUMAN | #3, #47 |
 | Vercel web | HUMAN | #6 |
-| Postgres | HUMAN | #5, #55 |
+| Postgres | **IN (optional)** | `migrations/`, `postgres_store.py` | #55 |
 | S3 media | HUMAN | #48 |
 | Baseten / Fireworks | HUMAN (optional) | #45–46 |
 | GitHub Actions secrets | HUMAN | #49 |
