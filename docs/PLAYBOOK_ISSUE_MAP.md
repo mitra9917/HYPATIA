@@ -8,14 +8,14 @@ Use **Playbook #** from the **[Build Playbook project](https://github.com/users/
 
 | Playbook # | Issue | Title | Status |
 | ---: | ---: | --- | --- |
-| **36** | [**22**](https://github.com/mitra9917/HYPATIA/issues/22) | P2.4 Held-out scoring gate + bootstrap CIs | this PR |
-| **37** | [**29**](https://github.com/mitra9917/HYPATIA/issues/29) | P3.4 Geometric ghost fallback renderer | this PR |
-| **38** | [**58**](https://github.com/mitra9917/HYPATIA/issues/58) | P2.9 JSON schemas + API contract tests | this PR |
-| **39** | [**30**](https://github.com/mitra9917/HYPATIA/issues/30) | P3.5 Experiment Designer (`/experiment/propose`) | this PR |
-| **40** | [**23**](https://github.com/mitra9917/HYPATIA/issues/23) | P2.5 UI hypothesis cards + rival comparison | this PR |
-| **41** | [**31**](https://github.com/mitra9917/HYPATIA/issues/31) | P3.6 HITL experiment UI + `/experiment/result` | this PR |
-| **42** | [**57**](https://github.com/mitra9917/HYPATIA/issues/57) | P2.8 Accept law gates + POST `/accept` + UI commit | this PR |
-| **43** | [**32**](https://github.com/mitra9917/HYPATIA/issues/32) | P3.7 Voice loop (`/api/voice/turn`) | this PR |
+| **36** | [**22**](https://github.com/mitra9917/HYPATIA/issues/22) | P2.4 Held-out scoring gate + bootstrap CIs | done (#92) |
+| **37** | [**29**](https://github.com/mitra9917/HYPATIA/issues/29) | P3.4 Geometric ghost fallback renderer | done (#92) |
+| **38** | [**58**](https://github.com/mitra9917/HYPATIA/issues/58) | P2.9 JSON schemas + API contract tests | done (#92) |
+| **39** | [**30**](https://github.com/mitra9917/HYPATIA/issues/30) | P3.5 Experiment Designer (`/experiment/propose`) | done (#92) |
+| **40** | [**23**](https://github.com/mitra9917/HYPATIA/issues/23) | P2.5 UI hypothesis cards + rival comparison | done (#92) |
+| **41** | [**31**](https://github.com/mitra9917/HYPATIA/issues/31) | P3.6 HITL experiment UI + `/experiment/result` | done (#92) |
+| **42** | [**57**](https://github.com/mitra9917/HYPATIA/issues/57) | P2.8 Accept law gates + POST `/accept` + UI commit | done (#92) |
+| **43** | [**32**](https://github.com/mitra9917/HYPATIA/issues/32) | P3.7 Voice loop (`/api/voice/turn`) | done (#92) |
 | **44** | [**59**](https://github.com/mitra9917/HYPATIA/issues/59) | P2.10 Observer narration in UI | done (#91) |
 
 **Next up after this PR:** playbook **45+** per board.
