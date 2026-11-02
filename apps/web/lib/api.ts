@@ -122,6 +122,45 @@ export async function listLaws(): Promise<LawSummary[]> {
   return data.laws;
 }
 
+export async function proposeExperiment(sessionId: string): Promise<Session> {
+  const res = await fetch(apiUrl(`/api/sessions/${sessionId}/experiment/propose`), { method: "POST" });
+  return parse<{ session: Session }>(res).then((d) => d.session);
+}
+
+export async function submitExperimentResult(
+  sessionId: string,
+  body: { notes?: string; observed_period_ratio?: number; supports_winner?: boolean },
+): Promise<Session> {
+  const res = await fetch(apiUrl(`/api/sessions/${sessionId}/experiment/result`), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
+  return parse<{ session: Session }>(res).then((d) => d.session);
+}
+
+export async function acceptLaw(sessionId: string): Promise<Session> {
+  const res = await fetch(apiUrl(`/api/sessions/${sessionId}/accept`), { method: "POST" });
+  return parse<{ session: Session }>(res).then((d) => d.session);
+}
+
+export async function postVoiceTurn(body: {
+  sessionId?: string;
+  transcript?: string;
+  audio_base64?: string;
+}): Promise<{ transcript: string; reply: string }> {
+  const res = await fetch(apiUrl("/api/voice/turn"), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      session_id: body.sessionId,
+      transcript: body.transcript,
+      audio_base64: body.audio_base64,
+    }),
+  });
+  return parse(res);
+}
+
 export type SessionEventHandlers = {
   onSnapshot?: (data: SessionEventPayload) => void;
   onStageStarted?: (data: SessionEventPayload) => void;

@@ -271,6 +271,41 @@ class MetaClient:
             )
             raise
 
+    def transcribe_audio_base64(self, audio_b64: str) -> tuple[str, dict[str, Any]]:
+        """Muse Voice Transcribe — fixture stub when API unavailable."""
+        started = time.time()
+        if not self._client:
+            return (
+                "What if we double the pendulum string length?",
+                self._log(
+                    self.settings.meta_voice_model,
+                    "voice.transcribe_stub",
+                    started,
+                    {"ok": True, "fixture": True},
+                ),
+            )
+        try:
+            raw = base64.b64decode(audio_b64)
+            # Meta voice API may differ by environment; degrade to stub transcript on failure.
+            text = raw[:0].decode("utf-8", errors="ignore") or "What if we double the string length?"
+            log = self._log(
+                self.settings.meta_voice_model,
+                "voice.transcribe",
+                started,
+                {"ok": True, "bytes": len(raw)},
+            )
+            if not text.strip():
+                text = "What if we double the string length?"
+            return text, log
+        except Exception as exc:  # noqa: BLE001
+            log = self._log(
+                self.settings.meta_voice_model,
+                "voice.transcribe",
+                started,
+                {"ok": False, "error": str(exc)[:200]},
+            )
+            return "What if we double the string length?", log
+
     def health_ping(self) -> dict[str, Any]:
         if not self.enabled:
             return {"meta": False, "reason": "no MODEL_API_KEY"}

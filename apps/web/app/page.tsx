@@ -10,17 +10,32 @@ import { TrackOverlay } from "@/components/TrackOverlay";
 import { TrajectoryChart } from "@/components/TrajectoryChart";
 import { WebcamCapture } from "@/components/WebcamCapture";
 import {
+  acceptLaw,
   connectSessionEvents,
   createSession,
   getSession,
   health,
   resumeSession,
   runSessionWithProgress,
+  submitExperimentResult,
 } from "@/lib/api";
+import { HypothesisCard } from "@/components/HypothesisCard";
 import { ObserverNarration } from "@/components/ObserverNarration";
+import { VoiceMic } from "@/components/VoiceMic";
 import type { PipelineStage } from "@/lib/pipeline";
 import type { StepperKey } from "@/lib/pipeline";
-import type { HealthInfo, Session } from "@/lib/types";
+import type { HealthInfo, Hypothesis, Session } from "@/lib/types";
+
+function demoGLine(h: Hypothesis): string | undefined {
+  if (h.params.g == null) return undefined;
+  const ci = h.param_ci?.g;
+  if (ci) {
+    const mid = (ci[0] + ci[1]) / 2;
+    const half = (ci[1] - ci[0]) / 2;
+    return `T = 2π√(L/g), g ≈ ${mid.toFixed(1)} ± ${half.toFixed(1)}`;
+  }
+  return `T = 2π√(L/g), g ≈ ${h.params.g.toFixed(1)}`;
+}
 
 function eventLine(e: { stage?: string; message?: string; event?: string; error?: string }): string {
   const head = e.stage || e.event || "event";
@@ -46,6 +61,7 @@ export default function HomePage() {
 
   const ghost = session?.imagination?.[0]?.ghost_polyline;
   const winner = session?.hypotheses?.find((h) => h.status === "winner");
+  const canCommitLaw = Boolean(session?.law_gate?.ok && session.status !== "accepted");
 
   const realProxy = useMemo(() => {
     const pts = session?.tracks?.[0]?.points;
@@ -245,13 +261,7 @@ export default function HomePage() {
             <h2>Rival theories</h2>
             <div className="cards">
               {(session?.hypotheses || []).map((h) => (
-                <div key={h.id} className={`card ${h.status}`}>
-                  <div className="latex">{h.form_latex}</div>
-                  <div className="meta">
-                    {h.form_plain} · held-out {h.heldout_score.toFixed(3)} · {h.status}
-                  </div>
-                  <div className="meta">{JSON.stringify(h.params)}</div>
-                </div>
+                <HypothesisCard key={h.id} hypothesis={h} demoLine={demoGLine(h)} />
               ))}
               {!session && <p className="meta">Run a session to spawn the hypothesis swarm.</p>}
             </div>
@@ -279,6 +289,39 @@ export default function HomePage() {
             ) : (
               <p className="meta">The PI will ask for the highest-information test.</p>
             )}
+            {session?.experiment && !session.experiment_result ? (
+              <form
+                className="meta"
+                style={{ marginTop: "0.75rem" }}
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  const fd = new FormData(e.currentTarget);
+                  const ratio = parseFloat(String(fd.get("ratio") || ""));
+                  void submitExperimentResult(session.id, {
+                    notes: String(fd.get("notes") || "Recorded in lab"),
+                    observed_period_ratio: Number.isFinite(ratio) ? ratio : undefined,
+                    supports_winner: true,
+                  })
+                    .then(setSession)
+                    .catch((ex) => setErr(String(ex)));
+                }}
+              >
+                <label>
+                  Period ratio after experiment{" "}
+                  <input name="ratio" type="number" step="0.01" defaultValue="1.41" />
+                </label>
+                <input name="notes" type="text" placeholder="Notes" style={{ marginLeft: "0.5rem" }} />
+                <button type="submit" className="btn secondary" style={{ marginLeft: "0.5rem" }}>
+                  Submit result
+                </button>
+              </form>
+            ) : null}
+            {session?.experiment_result ? (
+              <p className="meta" style={{ marginTop: "0.5rem" }}>
+                Result logged · ratio {session.experiment_result.observed_period_ratio ?? "—"}×
+              </p>
+            ) : null}
+            <VoiceMic sessionId={session?.id ?? null} />
           </div>
 
           <div className="panel">
@@ -288,11 +331,32 @@ export default function HomePage() {
                 <p className="latex" style={{ fontFamily: "var(--font-display)", fontSize: "1.4rem" }}>
                   {session?.notebook?.law_latex || winner.form_latex}
                 </p>
-                <p className="meta">params {JSON.stringify(session?.notebook?.params || winner.params)}</p>
+                <p className="meta">{demoGLine(winner) || `params ${JSON.stringify(winner.params)}`}</p>
                 <p className="meta">
                   error bars {JSON.stringify(session?.notebook?.error_bars || {})} · meta calls{" "}
                   {session?.meta_calls?.length || 0}
                 </p>
+                <button
+                  type="button"
+                  className="btn"
+                  style={{ marginTop: "0.75rem" }}
+                  disabled={!canCommitLaw || busy}
+                  onClick={() => {
+                    if (!session) return;
+                    setBusy(true);
+                    void acceptLaw(session.id)
+                      .then(setSession)
+                      .catch((ex) => setErr(String(ex)))
+                      .finally(() => setBusy(false));
+                  }}
+                >
+                  Commit law
+                </button>
+                {!canCommitLaw && session?.law_gate?.reasons?.length ? (
+                  <p className="meta" style={{ marginTop: "0.5rem" }}>
+                    Gates: {session.law_gate.reasons.join("; ")}
+                  </p>
+                ) : null}
               </>
             ) : (
               <p className="meta">Accepted law + error bars land here after held-out rivalry.</p>

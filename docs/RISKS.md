@@ -2,7 +2,7 @@
 
 | Risk | Likelihood | Impact | Fallback |
 | --- | --- | --- | --- |
-| Muse Image cannot place objects precisely | Med | Demo wow dies | Mask-hinted edits; geometric ghost; SAM still audits |
+| Muse Image cannot place objects precisely | Med | Demo wow dies | **API auto-fallback:** `_imagine` sets `source=geometric` when Muse Image fails or returns empty; mask-hinted edits; SAM still audits |
 | SAM 3.1 slow / limited from India | Med | Pipeline stalls | Cache tracks; open SAM on Modal; fixture mode |
 | LLM invents plausible but wrong laws | High | Trust / depth | Held-out prediction gate; always show rivals; bootstrap CIs |
 | Motion blur / bad lighting | Med | Bad tracks | 60fps phone, bright light, high-contrast bob; backup clips |

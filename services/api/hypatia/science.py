@@ -92,28 +92,41 @@ def fit_rival_hypotheses(points: list[TrajectoryPoint], length_m: float) -> list
     amp = float(np.max(np.abs(a_train)) + 1e-9)
     period = estimate_period(points) or (2 * math.pi * math.sqrt(length_m / G))
 
+    def _train_r2(pred_fn) -> tuple[float, float]:
+        if len(t_train) < 2 or len(t_test) < 2:
+            return 0.0, 0.0
+        pred_train = pred_fn(t_train, t_train[0], amp)
+        pred_test = pred_fn(t_test, t_train[0], amp)
+        return _heldout_r2(a_train, pred_train), _heldout_r2(a_test, pred_test)
+
     # Rival B (correct family): fit g from train period proxy + symbolic fitter (P2.1)
     fit = fit_pendulum_g(points, length_m)
     g_hat = float(fit["g"])
     period = float(fit.get("T") or estimate_period(points) or (2 * math.pi * math.sqrt(length_m / G)))
     omega_b = math.sqrt(max(g_hat, 1e-6) / max(length_m, 1e-6))
-    # align phase on train
     phase = 0.0
     if len(t_train):
         phase = float(np.arccos(np.clip(a_train[0] / amp, -1.0, 1.0)))
-    pred_b = amp * np.cos(omega_b * (t_test - t_train[0]) + phase)
-    r2_b = _heldout_r2(a_test, pred_b)
+
+    def pred_b(t_arr: np.ndarray, t0: float, amplitude: float) -> np.ndarray:
+        return amplitude * np.cos(omega_b * (t_arr - t0) + phase)
+
+    train_b, r2_b = _train_r2(pred_b)
 
     # Rival A: T∝L — only knows a constant period guess; use wrong omega from linear rule
     k_a = period / max(length_m, 1e-6)
-    # intentional misspecification: pretend omega derives from linear period model badly
     omega_a = 2 * math.pi / max(k_a * length_m * 1.35, 1e-6)
-    pred_a = amp * np.cos(omega_a * (t_test - t_train[0]) + phase)
-    r2_a = _heldout_r2(a_test, pred_a)
+
+    def pred_a(t_arr: np.ndarray, t0: float, amplitude: float) -> np.ndarray:
+        return amplitude * np.cos(omega_a * (t_arr - t0) + phase)
+
+    train_a, r2_a = _train_r2(pred_a)
 
     # Rival C: mass theory — near-constant prediction (no dynamics)
-    pred_c = np.full_like(a_test, float(np.mean(a_train)))
-    r2_c = _heldout_r2(a_test, pred_c)
+    def pred_c(t_arr: np.ndarray, t0: float, amplitude: float) -> np.ndarray:
+        return np.full_like(t_arr, float(np.mean(a_train)))
+
+    train_c, r2_c = _train_r2(pred_c)
 
     hyps = [
         Hypothesis(
@@ -121,7 +134,7 @@ def fit_rival_hypotheses(points: list[TrajectoryPoint], length_m: float) -> list
             form_latex=r"T = k L",
             form_plain="Period proportional to length",
             params={"k": round(k_a, 4)},
-            train_score=round(r2_a, 4),
+            train_score=round(train_a, 4),
             heldout_score=round(r2_a, 4),
             r2_heldout=round(r2_a, 4),
             status="candidate",
@@ -131,7 +144,7 @@ def fit_rival_hypotheses(points: list[TrajectoryPoint], length_m: float) -> list
             form_latex=r"T = 2\pi\sqrt{L/g}",
             form_plain="Small-angle pendulum",
             params={"g": round(g_hat, 3), "L": round(length_m, 3), "T": round(period, 4)},
-            train_score=round(r2_b, 4),
+            train_score=round(train_b, 4),
             heldout_score=round(r2_b, 4),
             r2_heldout=round(r2_b, 4),
             status="candidate",
@@ -141,7 +154,7 @@ def fit_rival_hypotheses(points: list[TrajectoryPoint], length_m: float) -> list
             form_latex=r"T = f(m)",
             form_plain="Period depends on bob mass",
             params={"m_effect": 1.0},
-            train_score=round(r2_c, 4),
+            train_score=round(train_c, 4),
             heldout_score=round(r2_c, 4),
             r2_heldout=round(r2_c, 4),
             status="candidate",

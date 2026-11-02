@@ -7,6 +7,7 @@ export type Hypothesis = {
   heldout_score: number;
   r2_heldout: number;
   status: string;
+  param_ci?: Record<string, [number, number]>;
 };
 
 export type ImaginationFrame = {
@@ -45,6 +46,17 @@ export type Session = {
     instruction: string;
     rationale: string;
     expected_outcomes: Record<string, string>;
+  } | null;
+  experiment_result?: {
+    notes: string;
+    observed_period_ratio?: number | null;
+    supports_winner?: boolean | null;
+  } | null;
+  law_gate?: {
+    ok: boolean;
+    held_out_winner?: boolean;
+    g_in_range?: boolean;
+    reasons?: string[];
   } | null;
   imagination: ImaginationFrame[];
   notebook?: {

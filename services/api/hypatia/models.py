@@ -83,6 +83,7 @@ class Hypothesis(BaseModel):
     heldout_score: float = 0.0
     r2_heldout: float = 0.0
     status: str = "candidate"  # candidate | eliminated | winner
+    param_ci: dict[str, list[float]] = Field(default_factory=dict)
 
 
 class ExperimentProposal(BaseModel):
@@ -110,6 +111,12 @@ class Notebook(BaseModel):
     error_bars: dict[str, float] = Field(default_factory=dict)
 
 
+class ExperimentResult(BaseModel):
+    notes: str = ""
+    observed_period_ratio: float | None = None
+    supports_winner: bool | None = None
+
+
 class Session(BaseModel):
     id: str
     status: SessionStatus = SessionStatus.created
@@ -123,8 +130,10 @@ class Session(BaseModel):
     tracks: list[Track] = Field(default_factory=list)
     hypotheses: list[Hypothesis] = Field(default_factory=list)
     experiment: ExperimentProposal | None = None
+    experiment_result: ExperimentResult | None = None
     imagination: list[ImaginationFrame] = Field(default_factory=list)
     notebook: Notebook | None = None
+    law_gate: dict[str, Any] | None = None
     events: list[dict[str, Any]] = Field(default_factory=list)
     meta_calls: list[dict[str, Any]] = Field(default_factory=list)
     pi_response_id: str | None = None
