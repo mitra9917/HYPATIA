@@ -1,0 +1,11 @@
+{
+  "objects": [
+    { "name": "pendulum bob", "why_interesting": "periodic motion" },
+    { "name": "string", "why_interesting": "length may enter the law" },
+    { "name": "A4 sheet", "why_interesting": "scale calibration" }
+  ],
+  "candidate_variables": ["angle", "length", "period", "mass?"],
+  "sam_prompts": ["pendulum bob", "string", "A4 sheet"],
+  "suggested_domain": "mechanics.pendulum",
+  "narration": "Something is swinging. Measuring angle and length. Using the A4 sheet for scale."
+}

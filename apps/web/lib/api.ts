@@ -25,3 +25,9 @@ export async function runSession(id: string): Promise<Session> {
   const data = await parse<{ session: Session }>(res);
   return data.session;
 }
+
+export async function observeSession(id: string): Promise<Session> {
+  const res = await fetch(`/api/sessions/${id}/observe`, { method: "POST" });
+  const data = await parse<{ session: Session }>(res);
+  return data.session;
+}

@@ -46,6 +46,34 @@ class ModelRouter:
             json_schema=json_schema,
         )
 
+    def observe_scene(
+        self,
+        *,
+        prompt: str,
+        instructions: str,
+        json_schema: dict[str, Any],
+        file_id: str | None = None,
+    ) -> tuple[str, dict[str, Any]]:
+        """Spark Observer with optional uploaded video ``file_id``."""
+        if file_id:
+            input_payload: list[dict[str, Any]] | str = [
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "input_text", "text": prompt},
+                        {"type": "input_video", "file_id": file_id},
+                    ],
+                }
+            ]
+        else:
+            input_payload = prompt
+        return self._client.respond_text(
+            model=self.settings.observer_model,
+            input_payload=input_payload,
+            instructions=instructions,
+            json_schema=json_schema,
+        )
+
     def pi_narrate(self, prompt: str, *, instructions: str) -> tuple[str, dict[str, Any]]:
         return self._client.respond_text(
             model=self.settings.meta_pi_model,
