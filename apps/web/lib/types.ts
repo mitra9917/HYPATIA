@@ -16,6 +16,9 @@ export type ImaginationFrame = {
   audit_error_m: number;
   ghost_polyline: { t: number; x_m: number; y_m: number; angle_rad: number }[];
   source: string;
+  audit_iou?: number;
+  audit_centroid_m?: number;
+  ghost_frame_uri?: string | null;
 };
 
 export type SessionEventPayload = {
@@ -56,6 +59,7 @@ export type Session = {
     ok: boolean;
     held_out_winner?: boolean;
     g_in_range?: boolean;
+    bootstrap_ok?: boolean;
     reasons?: string[];
   } | null;
   imagination: ImaginationFrame[];
@@ -82,6 +86,9 @@ export type Session = {
   error?: string | null;
   upload_consent?: boolean;
   library_hint?: { message?: string; matches?: { law_latex: string; session_id: string }[] } | null;
+  domain_hint?: string | null;
+  pi_plans?: Record<string, { phase?: string; tools?: string[]; goal?: string; narration?: string; source?: string }>;
+  source_type?: string;
 };
 
 export type HealthInfo = {
@@ -116,5 +123,37 @@ export type LawSummary = {
   params: Record<string, number>;
   mode: string;
   stages_completed?: number;
+  time_to_law_index?: number;
   error_bars?: Record<string, number>;
+};
+
+export type ToolLibraryEntry = {
+  id: string;
+  title: string;
+  domain: string;
+  promoted?: boolean;
+  source?: string;
+};
+
+export type VeritasResult = {
+  ok: boolean;
+  verdict: string;
+  headline?: string;
+  detail?: string;
+  expected_g_m_s2?: number;
+  measured_g_m_s2?: number;
+  break_frame?: number;
+  momentum_conserved?: boolean;
+  clip_id?: string;
+  module?: string;
+};
+
+export type ToolsmithTestResult = {
+  ok: boolean;
+  tool_id?: string;
+  track_fixture?: string;
+  stdout?: string;
+  stderr?: string;
+  returncode?: number;
+  sandbox?: string;
 };

@@ -3,7 +3,15 @@ import {
   type PipelineStage,
   type StepperKey,
 } from "./pipeline";
-import type { HealthInfo, LawSummary, Session, SessionEventPayload } from "./types";
+import type {
+  HealthInfo,
+  LawSummary,
+  Session,
+  SessionEventPayload,
+  ToolLibraryEntry,
+  ToolsmithTestResult,
+  VeritasResult,
+} from "./types";
 
 /** In browser, set NEXT_PUBLIC_API_ORIGIN=http://127.0.0.1:8000 to skip Next rewrite (long Meta stages). */
 export function apiUrl(path: string): string {
@@ -170,6 +178,33 @@ export async function fetchTrajectoryCsv(sessionId: string, trackIndex = 0): Pro
 export async function listLaws(): Promise<LawSummary[]> {
   const data = await parse<{ laws: LawSummary[] }>(await fetch(apiUrl("/api/library/laws")));
   return data.laws;
+}
+
+export async function listTools(): Promise<ToolLibraryEntry[]> {
+  const data = await parse<{ tools: ToolLibraryEntry[] }>(await fetch(apiUrl("/api/library/tools")));
+  return data.tools;
+}
+
+export async function runToolsmithTest(): Promise<ToolsmithTestResult> {
+  return parse(await fetch(apiUrl("/api/toolsmith/test-promoted"), { method: "POST" }));
+}
+
+export async function analyzeVeritas(): Promise<VeritasResult> {
+  return parse(await fetch(apiUrl("/api/veritas/analyze"), { method: "POST" }));
+}
+
+export function cellsNotebookDownloadUrl(sessionId: string): string {
+  return apiUrl(`/api/sessions/${sessionId}/cells-notebook.md`);
+}
+
+export function imaginationFrameUrl(sessionId: string, index = 0): string {
+  return apiUrl(`/api/sessions/${sessionId}/imagination/${index}/frame.png`);
+}
+
+export async function createCellsSession(): Promise<Session> {
+  const res = await fetchWithTimeout("/api/sessions?domain_hint=biology.cells", { method: "POST" }, 30_000);
+  const data = await parse<{ session: Session }>(res);
+  return data.session;
 }
 
 export async function proposeExperiment(sessionId: string): Promise<Session> {
