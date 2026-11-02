@@ -7,6 +7,7 @@ from typing import Iterable
 import numpy as np
 
 from .models import ExperimentProposal, Hypothesis, TrajectoryPoint
+from .symbolic_fitter import fit_pendulum_g
 
 
 G = 9.80665
@@ -91,8 +92,10 @@ def fit_rival_hypotheses(points: list[TrajectoryPoint], length_m: float) -> list
     amp = float(np.max(np.abs(a_train)) + 1e-9)
     period = estimate_period(points) or (2 * math.pi * math.sqrt(length_m / G))
 
-    # Rival B (correct family): fit g from train period proxy, predict SHM on held-out
-    g_hat = (4 * math.pi**2 * length_m) / max(period**2, 1e-9)
+    # Rival B (correct family): fit g from train period proxy + symbolic fitter (P2.1)
+    fit = fit_pendulum_g(points, length_m)
+    g_hat = float(fit["g"])
+    period = float(fit.get("T") or estimate_period(points) or (2 * math.pi * math.sqrt(length_m / G)))
     omega_b = math.sqrt(max(g_hat, 1e-6) / max(length_m, 1e-6))
     # align phase on train
     phase = 0.0
@@ -127,7 +130,7 @@ def fit_rival_hypotheses(points: list[TrajectoryPoint], length_m: float) -> list
             id=str(uuid.uuid4())[:8],
             form_latex=r"T = 2\pi\sqrt{L/g}",
             form_plain="Small-angle pendulum",
-            params={"g": round(g_hat, 3), "L": round(length_m, 3)},
+            params={"g": round(g_hat, 3), "L": round(length_m, 3), "T": round(period, 4)},
             train_score=round(r2_b, 4),
             heldout_score=round(r2_b, 4),
             r2_heldout=round(r2_b, 4),
