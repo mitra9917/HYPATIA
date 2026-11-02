@@ -229,6 +229,31 @@ input {
   padding: 0.35rem 0;
 }
 
+.fixture-banner {
+  margin: 0.75rem auto 0;
+  padding: 0.65rem 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 107, 61, 0.45);
+  background: rgba(255, 107, 61, 0.12);
+  color: var(--law);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  align-items: baseline;
+  font-size: 0.92rem;
+}
+
+.fixture-banner code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+}
+
+.fixture-banner .meta {
+  flex-basis: 100%;
+  color: var(--fog-dim);
+  font-size: 0.85rem;
+}
+
 .pill {
   display: inline-block;
   font-family: var(--font-mono);

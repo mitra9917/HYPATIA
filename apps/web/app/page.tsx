@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { FixtureModeBanner } from "@/components/FixtureModeBanner";
 import { GhostCanvas } from "@/components/GhostCanvas";
 import { TrackOverlay } from "@/components/TrackOverlay";
 import { createSession, health, runSession } from "@/lib/api";
@@ -52,6 +53,10 @@ export default function HomePage() {
 
   return (
     <main>
+      <FixtureModeBanner
+        fixtureMode={Boolean(healthInfo?.fixture_mode)}
+        fixtureRecord={Boolean(healthInfo?.fixture_record)}
+      />
       <section className="hero shell">
         <p className="meta" style={{ marginBottom: "1.25rem" }}>
           META GLOBAL AI DEVELOPER HACKATHON · INDIE · PUSH THE FRONTIER

@@ -108,6 +108,11 @@ async def run_observer(session: Session, settings: Settings | None = None) -> Se
         )
         session.meta_calls.append(log)
         session.scene = SceneBrief.model_validate(json.loads(text))
+        if settings.fixture_record and session.scene:
+            from .fixture_recorder import write_observer_fixture
+
+            write_observer_fixture(session.scene)
+            _event(session, "Recorded Observer SceneBrief to data/fixtures/")
     except Exception as exc:  # noqa: BLE001
         _event(session, "observe", f"Live Observer failed ({exc}); using fixture scene")
         session.mode = "hybrid"
