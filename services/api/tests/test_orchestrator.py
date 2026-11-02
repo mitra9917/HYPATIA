@@ -32,6 +32,13 @@ def test_happy_path_stage_by_stage(client: TestClient) -> None:
     assert body["notebook"] is not None
 
 
+def test_observe_records_pi_plan(client: TestClient) -> None:
+    sid = client.post("/api/sessions").json()["session"]["id"]
+    r = client.post(f"/api/sessions/{sid}/observe")
+    assert r.status_code == 200
+    assert "observe" in r.json()["session"]["pi_plans"]
+
+
 def test_hypothesize_before_measure_returns_422(client: TestClient) -> None:
     sid = client.post("/api/sessions").json()["session"]["id"]
     client.post(f"/api/sessions/{sid}/observe")
