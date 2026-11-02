@@ -1,5 +1,7 @@
 "use client";
 
+import { useMemo, useState } from "react";
+
 type BBox = { x: number; y: number; w: number; h: number };
 
 type MaskFrame = {
@@ -25,11 +27,17 @@ type Props = {
   tracks: Track[] | undefined;
 };
 
-/** Normalized 0–1 SAM-style boxes for demo overlay (full decode in #51). */
+/** SAM mask boxes with frame scrubber (P1.7 / #16). */
 export function TrackOverlay({ tracks }: Props) {
   const track = tracks?.[0];
   const frames = track?.mask_frames ?? [];
-  const preview = frames.length > 12 ? frames.filter((_, i) => i % 3 === 0) : frames;
+  const [frameIdx, setFrameIdx] = useState(0);
+
+  const active = useMemo(() => {
+    if (!frames.length) return null;
+    const i = Math.min(Math.max(frameIdx, 0), frames.length - 1);
+    return frames[i];
+  }, [frames, frameIdx]);
 
   if (!track) {
     return <p className="meta">Measurer will attach mask frames after measure.</p>;
@@ -45,7 +53,7 @@ export function TrackOverlay({ tracks }: Props) {
           : null}
       </p>
       <div
-        className="stage"
+        className="stage track-overlay-stage"
         style={{
           marginTop: "0.75rem",
           aspectRatio: "16 / 10",
@@ -56,33 +64,48 @@ export function TrackOverlay({ tracks }: Props) {
         }}
       >
         <svg viewBox="0 0 1 1" preserveAspectRatio="none" style={{ width: "100%", height: "100%" }}>
-          {preview.map((f) => (
+          {frames.map((f) => (
             <rect
-              key={`${f.frame_index}-${f.t_s}`}
+              key={`ghost-${f.frame_index}-${f.t_s}`}
               x={f.bbox_norm.x}
               y={f.bbox_norm.y}
               width={f.bbox_norm.w}
               height={f.bbox_norm.h}
               fill="none"
-              stroke="rgba(255, 107, 61, 0.55)"
-              strokeWidth={0.008}
+              stroke="rgba(61, 255, 181, 0.12)"
+              strokeWidth={0.006}
             />
           ))}
+          {active ? (
+            <rect
+              x={active.bbox_norm.x}
+              y={active.bbox_norm.y}
+              width={active.bbox_norm.w}
+              height={active.bbox_norm.h}
+              fill="rgba(255, 107, 61, 0.15)"
+              stroke="rgba(255, 107, 61, 0.9)"
+              strokeWidth={0.012}
+            />
+          ) : null}
         </svg>
-        <span
-          className="meta"
-          style={{
-            position: "absolute",
-            bottom: 8,
-            left: 8,
-            background: "rgba(0,0,0,0.45)",
-            padding: "2px 6px",
-            borderRadius: 4,
-          }}
-        >
-          SAM overlay preview ({preview.length} boxes)
+        <span className="overlay-caption meta">
+          {active
+            ? `frame ${active.frame_index} · t=${active.t_s.toFixed(2)}s`
+            : "No mask frames"}
         </span>
       </div>
+      {frames.length > 1 ? (
+        <label className="meta frame-scrubber">
+          Scrub masks
+          <input
+            type="range"
+            min={0}
+            max={frames.length - 1}
+            value={Math.min(frameIdx, frames.length - 1)}
+            onChange={(e) => setFrameIdx(Number(e.target.value))}
+          />
+        </label>
+      ) : null}
     </div>
   );
 }

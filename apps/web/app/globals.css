@@ -98,6 +98,7 @@ input {
   display: flex;
   flex-wrap: wrap;
   gap: 0.75rem;
+  align-items: flex-start;
   animation: rise 1.05s ease 0.14s both;
 }
 
@@ -321,6 +322,51 @@ input {
 
 .session-error .retry-hint {
   margin: 0.5rem 0 0.75rem;
+}
+
+.webcam-capture {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+
+.webcam-preview {
+  width: min(280px, 100%);
+  border-radius: 8px;
+  border: 1px solid var(--line);
+}
+
+.frame-scrubber {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-top: 0.65rem;
+}
+
+.frame-scrubber input[type="range"] {
+  width: 100%;
+  accent-color: var(--signal);
+}
+
+.overlay-caption {
+  position: absolute;
+  bottom: 8px;
+  left: 8;
+  background: rgba(0, 0, 0, 0.45);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.trajectory-chart {
+  margin-top: 1rem;
+}
+
+.trajectory-chart svg {
+  width: 100%;
+  max-width: 420px;
+  height: auto;
+  display: block;
 }
 
 .pill {

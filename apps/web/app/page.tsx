@@ -6,6 +6,8 @@ import { GhostCanvas } from "@/components/GhostCanvas";
 import { PipelineStepper } from "@/components/PipelineStepper";
 import { SessionErrorPanel } from "@/components/SessionErrorPanel";
 import { TrackOverlay } from "@/components/TrackOverlay";
+import { TrajectoryChart } from "@/components/TrajectoryChart";
+import { WebcamCapture } from "@/components/WebcamCapture";
 import {
   connectSessionEvents,
   createSession,
@@ -147,6 +149,11 @@ export default function HomePage() {
               }}
             />
           </label>
+          <WebcamCapture
+            disabled={busy}
+            onCapture={(file) => void onRun(file)}
+            onError={(msg) => setErr(msg)}
+          />
         </div>
         {busy && progressLabel ? (
           <p className="meta progress-line" aria-live="polite">
@@ -198,6 +205,7 @@ export default function HomePage() {
           <div className="panel" style={{ marginBottom: "1rem" }}>
             <h2>Measurer — SAM track</h2>
             <TrackOverlay tracks={session.tracks} />
+            <TrajectoryChart points={session.tracks[0]?.points} title="Pendulum angle vs time" />
           </div>
         ) : null}
 

@@ -99,6 +99,14 @@ export async function observeSession(id: string): Promise<Session> {
   return runStage(id, "observe");
 }
 
+export async function fetchTrajectoryCsv(sessionId: string, trackIndex = 0): Promise<string> {
+  const res = await fetch(apiUrl(`/api/sessions/${sessionId}/tracks/${trackIndex}/trajectory.csv`));
+  if (!res.ok) {
+    throw new Error(await res.text());
+  }
+  return res.text();
+}
+
 export async function listLaws(): Promise<LawSummary[]> {
   const data = await parse<{ laws: LawSummary[] }>(await fetch(apiUrl("/api/library/laws")));
   return data.laws;
