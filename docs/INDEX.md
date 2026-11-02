@@ -11,6 +11,7 @@ Read in this order before opening issues or coding:
 | 4b | [META_COVERAGE_STATUS.md](./META_COVERAGE_STATUS.md) | Playbook #1 live matrix — scaffold vs verified |
 | 5 | [WIN_STRATEGY.md](./WIN_STRATEGY.md) | Campaign to clear finals and win Indie track |
 | 6 | [BUILD_PLAN.md](./BUILD_PLAN.md) | Phases, milestones, issue IDs, DoD |
+| 6b | [PLAYBOOK_ISSUE_MAP.md](./PLAYBOOK_ISSUE_MAP.md) | **Playbook # → GitHub issue** (daily build order) |
 | 7 | [DEPLOYMENT.md](./DEPLOYMENT.md) | Modal-first deploy (Vercel + GPU + R2/S3); AWS as later path |
 | 8 | [EVALS.md](./EVALS.md) | Metrics and harness |
 | 9 | [RISKS.md](./RISKS.md) | Failures, kill order, live incident runbook |
@@ -22,6 +23,8 @@ Also:
 - [SYMBOLIC_FITTER.md](./SYMBOLIC_FITTER.md) — P2.1 SciPy pendulum g recovery (issue #19)
 - [GLIMMER_SWARM.md](./GLIMMER_SWARM.md) — P2.2 Glimmer theorist batch + providers (issue #20)
 - [PI_ORCHESTRATION.md](./PI_ORCHESTRATION.md) — P2.3 Wonder PI phase plans (issue #21)
+- [GHOST_PIPELINE.md](./GHOST_PIPELINE.md) — M3 predictor + imagine + SAM audit (#26–#28)
+- [PLAYBOOK_ISSUE_MAP.md](./PLAYBOOK_ISSUE_MAP.md) — board Playbook # → issue #
 - [../demo/DEMO_SCRIPT.md](../demo/DEMO_SCRIPT.md) — 3-minute video script
 - [../AGENTS.md](../AGENTS.md) — coding conventions for humans and agents
 - [../README.md](../README.md) — public face of the repo

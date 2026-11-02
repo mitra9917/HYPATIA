@@ -97,6 +97,10 @@ class ImaginationFrame(BaseModel):
     audit_error_m: float
     ghost_polyline: list[dict[str, float]] = Field(default_factory=list)
     source: str = "geometric"  # muse_image | geometric | fixture
+    ghost_frame_uri: str | None = None
+    mask_hint_bbox: BBoxNorm | None = None
+    audit_iou: float | None = None
+    audit_centroid_m: float | None = None
 
 
 class Notebook(BaseModel):

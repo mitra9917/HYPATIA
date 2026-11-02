@@ -259,6 +259,8 @@ class MetaClient:
             b64 = img.data[0].b64_json if img.data else None
             raw = base64.b64decode(b64) if b64 else None
             log = self._log(self.settings.meta_image_model, "images.generate", started, {"ok": True})
+            log["images_generated"] = 1
+            log["image_spend_usd_est"] = 0.01
             return raw, log
         except Exception as exc:  # noqa: BLE001
             log = self._log(

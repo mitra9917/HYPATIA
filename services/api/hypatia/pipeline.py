@@ -14,9 +14,7 @@ from .models import (
     SessionStatus,
 )
 from .science import (
-    audit_ghost,
     fit_rival_hypotheses,
-    ghost_polyline,
     propose_experiment,
     synthesize_pendulum_track,
 )
@@ -124,28 +122,61 @@ async def _hypothesize(session: Session, client: MetaClient, settings: Settings)
 
 
 async def _imagine(session: Session, client: MetaClient, settings: Settings) -> None:
+    from .imagination_audit import metre_xy_to_bbox_norm, sam_imagination_audit
+    from .imagination_media import save_imagination_frame
+    from .predictor import forward_polyline, state_at_delta
+
     session.status = SessionStatus.imagining
     _event(session, "imagine", "Drawing predicted future (Muse Image or geometric ghost)")
 
     winner = next((h for h in session.hypotheses if h.status == "winner"), None)
     if not winner:
         return
-    points = session.tracks[0].points if session.tracks else []
-    ghost = ghost_polyline(points, winner)
-    err = audit_ghost(points, ghost)
+    track = session.tracks[0] if session.tracks else None
+    points = track.points if track else []
+    ghost = forward_polyline(points, winner)
+    audit = sam_imagination_audit(track, points, ghost)
+    err = float(audit["audit_error_m"])
     source = "geometric"
+    image_bytes: bytes | None = None
 
     if client.enabled and session.mode == "live":
         try:
-            _, log = client.generate_image(
+            image_bytes, log = client.generate_image(
                 f"Scientific visualization of a pendulum bob at the next predicted angle for law {winner.form_latex}"
             )
             session.meta_calls.append(log)
             source = "muse_image"
-            _event(session, "imagine", "Muse Image frame generated; SAM-style audit on geometric proxy")
+            _event(
+                session,
+                "imagine",
+                f"Muse Image frame (${log.get('image_spend_usd_est', 0.01):.2f} est.); SAM audit next",
+            )
         except Exception as exc:  # noqa: BLE001
             session.meta_calls.append({"model": settings.meta_image_model, "ok": False, "error": str(exc)[:160]})
             _event(session, "imagine", f"Muse Image unavailable ({exc}); geometric ghost")
+    else:
+        session.meta_calls.append(
+            {
+                "model": settings.meta_image_model,
+                "kind": "images.generate_stub",
+                "ok": True,
+                "images_generated": 0,
+                "image_spend_usd_est": 0.0,
+                "note": "fixture geometric ghost",
+            }
+        )
+
+    frame_uri = save_imagination_frame(session.id, image_bytes, index=0)
+    next_state = state_at_delta(points, winner, 0.5)
+    length = float(next_state.get("length_m") or winner.params.get("L") or 0.45)
+    if track and points:
+        length = float(points[-1].length_m or length)
+    mask_hint = metre_xy_to_bbox_norm(
+        float(next_state["x_m"]),
+        float(next_state["y_m"]),
+        length_m=length,
+    )
 
     session.imagination = [
         ImaginationFrame(
@@ -154,8 +185,17 @@ async def _imagine(session: Session, client: MetaClient, settings: Settings) -> 
             audit_error_m=round(err, 4),
             ghost_polyline=ghost,
             source=source,
+            ghost_frame_uri=frame_uri,
+            mask_hint_bbox=mask_hint,
+            audit_iou=float(audit.get("audit_iou") or 0.0),
+            audit_centroid_m=float(audit.get("audit_centroid_m") or err),
         )
     ]
+    _event(
+        session,
+        "imagine",
+        f"SAM audit IoU={audit.get('audit_iou', 0):.3f} centroid={audit.get('audit_centroid_m', err):.4f} m",
+    )
     store.put(session)
 
 

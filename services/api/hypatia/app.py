@@ -6,11 +6,12 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, File, Form, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import PlainTextResponse, StreamingResponse
+from fastapi.responses import FileResponse, PlainTextResponse, StreamingResponse
 
 from .config import get_settings
 from .contributor_policy import contributor_policy_summary
 from .glimmer import run_glimmer_swarm
+from .imagination_media import imagination_frame_path
 from .meta_client import MetaClient
 from .models import CreateSessionResponse, RunResponse, Session
 from .orchestrator import PIPELINE_STAGES, StageGuardError, run_pipeline_from, run_pipeline_stage
@@ -98,6 +99,17 @@ async def post_session(
         source = "upload"
     session = await create_session(filename=filename, source_type=source, raw=raw)
     return CreateSessionResponse(session=session)
+
+
+@app.get("/api/sessions/{session_id}/imagination/{index}/frame.png")
+def get_imagination_frame(session_id: str, index: int = 0) -> FileResponse:
+    session = store.get(session_id)
+    if not session:
+        raise HTTPException(404, "session not found")
+    path = imagination_frame_path(session_id, index)
+    if not path.is_file():
+        raise HTTPException(404, "ghost frame not available — run imagine first")
+    return FileResponse(path, media_type="image/png")
 
 
 @app.get("/api/sessions/{session_id}/tracks/{track_index}/trajectory.csv")
