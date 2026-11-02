@@ -244,6 +244,24 @@ input {
   font-size: 0.92rem;
 }
 
+.contributor-banner {
+  margin: 0.75rem auto 0;
+  padding: 0.65rem 1rem;
+  border-radius: 10px;
+  border: 1px solid rgba(61, 255, 181, 0.35);
+  background: rgba(61, 255, 181, 0.08);
+  color: var(--law);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  font-size: 0.92rem;
+}
+
+.contributor-banner code {
+  font-family: var(--font-mono);
+  font-size: 0.85em;
+}
+
 .fixture-banner code {
   font-family: var(--font-mono);
   font-size: 0.85em;

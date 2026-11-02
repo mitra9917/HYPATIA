@@ -78,6 +78,15 @@ export type HealthInfo = {
   fixture_record?: boolean;
   session_store?: string;
   pipeline_stages?: string[];
+  model_router?: {
+    use_contributor?: boolean;
+    observer?: string;
+  };
+  contributor_policy?: {
+    meta_use_contributor?: boolean;
+    observer_spark_tier?: string;
+    policy?: string;
+  };
 };
 
 export type LawSummary = {

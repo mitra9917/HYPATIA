@@ -9,6 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse, StreamingResponse
 
 from .config import get_settings
+from .contributor_policy import contributor_policy_summary
 from .glimmer import run_glimmer_swarm
 from .meta_client import MetaClient
 from .models import CreateSessionResponse, RunResponse, Session
@@ -70,6 +71,7 @@ def health() -> dict:
         "replay_mode": settings.effective_fixture_mode,
         "fixture_record": settings.fixture_record,
         "model_router": settings.model_router(),
+        "contributor_policy": contributor_policy_summary(settings),
         "pipeline_stages": list(PIPELINE_STAGES),
         "glimmer_provider": settings.glimmer_provider,
         "glimmer": glimmer_probe,

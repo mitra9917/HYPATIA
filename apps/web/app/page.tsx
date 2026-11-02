@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { ContributorModeBanner } from "@/components/ContributorModeBanner";
 import { FixtureModeBanner } from "@/components/FixtureModeBanner";
 import { GhostCanvas } from "@/components/GhostCanvas";
 import { PipelineStepper } from "@/components/PipelineStepper";
@@ -122,6 +123,13 @@ export default function HomePage() {
 
   return (
     <main>
+      <ContributorModeBanner
+        active={Boolean(
+          healthInfo?.contributor_policy?.meta_use_contributor ||
+            healthInfo?.model_router?.use_contributor,
+        )}
+        tier={healthInfo?.contributor_policy?.observer_spark_tier}
+      />
       <FixtureModeBanner
         fixtureMode={Boolean(healthInfo?.fixture_mode)}
         fixtureRecord={Boolean(healthInfo?.fixture_record)}
