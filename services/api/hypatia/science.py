@@ -171,27 +171,9 @@ def propose_experiment(hyps: list[Hypothesis]) -> ExperimentProposal:
 
 def ghost_polyline(points: list[TrajectoryPoint], hyp: Hypothesis, steps: int = 60) -> list[dict[str, float]]:
     """Predict future bob positions from the winning law for overlay."""
-    if not points:
-        return []
-    length = hyp.params.get("L") or next((p.length_m for p in points if p.length_m), 0.45)
-    g = hyp.params.get("g", G)
-    amp = points[0].angle_rad or 0.3
-    t0 = points[-1].t
-    omega = math.sqrt(max(g, 1e-6) / max(length, 1e-6))
-    phase = math.acos(max(-1.0, min(1.0, (points[-1].angle_rad or 0.0) / max(amp, 1e-6))))
-    out: list[dict[str, float]] = []
-    for i in range(steps):
-        t = t0 + i / 30.0
-        angle = amp * math.cos(omega * (t - t0) + phase)
-        out.append(
-            {
-                "t": t,
-                "x_m": length * math.sin(angle),
-                "y_m": -length * math.cos(angle),
-                "angle_rad": angle,
-            }
-        )
-    return out
+    from .predictor import forward_polyline
+
+    return forward_polyline(points, hyp, steps=steps)
 
 
 def audit_ghost(real: list[TrajectoryPoint], ghost: list[dict[str, float]]) -> float:
