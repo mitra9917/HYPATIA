@@ -21,6 +21,7 @@ Read in this order before opening issues or coding:
 | 9 | [RISKS.md](./RISKS.md) | Failures, kill order, live incident runbook |
 | 10 | [REPO_STRUCTURE.md](./REPO_STRUCTURE.md) | Monorepo layout |
 | 11 | [NEXT_ISSUES.md](./NEXT_ISSUES.md) | First GitHub issues to file after docs merge |
+| 12 | [UI_REDESIGN.md](./UI_REDESIGN.md) | Multi-page lab UI IA, tokens, components |
 
 Also:
 
