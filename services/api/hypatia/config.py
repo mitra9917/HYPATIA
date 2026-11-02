@@ -12,7 +12,7 @@ VIDEO_DIR = DATA_DIR / "videos"
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    model_config = SettingsConfigDict(env_file=str(ROOT / ".env"), extra="ignore")
 
     model_api_key: str = ""
     meta_base_url: str = "https://api.meta.ai/v1"
