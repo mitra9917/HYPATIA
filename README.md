@@ -19,16 +19,13 @@ Built for the **Meta Global AI Developer Hackathon** — **Indie track** · **Pu
 ## Quick start (local)
 
 ```bash
-# API (fixture mode — no key required)
-chmod +x scripts/run_api_local.sh
-./scripts/run_api_local.sh
-
-# Web (other terminal)
-cd apps/web && npm install && npm run dev
-# open http://localhost:3000 → "Run desk pendulum demo"
+cp .env.example .env          # optional; fixture mode needs no Meta key
+bash scripts/run_api_local.sh # terminal 1 — API on :8000
+cd apps/web && npm install && npm run dev   # terminal 2 — UI on :3000
+bash scripts/smoke_health.sh  # pretty-print /api/health (10s demo check)
 ```
 
-Or: `docker compose up --build`
+**Docker full stack** (Postgres + API + web): `docker compose up --build` → http://localhost:3000
 
 ### Live Meta mode
 

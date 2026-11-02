@@ -57,6 +57,18 @@ class Settings(BaseSettings):
             return True
         return not self.has_meta_key
 
+    def model_router(self) -> dict[str, str | bool]:
+        """Hosted Meta model IDs for health / debugging (no secrets)."""
+        return {
+            "base_url": self.meta_base_url,
+            "observer": self.observer_model,
+            "pi": self.meta_pi_model,
+            "image": self.meta_image_model,
+            "sam": self.meta_sam_model,
+            "voice": self.meta_voice_model,
+            "use_contributor": self.meta_use_contributor,
+        }
+
 
 @lru_cache
 def get_settings() -> Settings:

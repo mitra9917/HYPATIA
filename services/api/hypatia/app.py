@@ -42,10 +42,13 @@ def health() -> dict:
         "ok": True,
         "service": "hypatia-api",
         "fixture_mode": settings.effective_fixture_mode,
+        "model_router": settings.model_router(),
         "glimmer_provider": settings.glimmer_provider,
         "glimmer": glimmer_probe,
         "meta": client.health_ping() if settings.has_meta_key else {"meta": False, "reason": "no key"},
         "s3_configured": bool(settings.s3_bucket and settings.aws_access_key_id),
+        "database_configured": bool(settings.database_url.strip()),
+        "session_store": "memory",
         "deploy_priority": ["meta_model_api", "modal", "baseten", "fireworks", "aws"],
     }
 
