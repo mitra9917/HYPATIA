@@ -11,4 +11,7 @@ pytest tests/test_toolsmith.py tests/test_veritas.py tests/test_cells_domain.py 
 
 bash "$ROOT/scripts/verify_production_deploy_checklist.sh"
 
+echo
+echo "Unit/integration tests passed. For live HTTP checks (curl), run:"
+echo "  ./scripts/smoke_playbook_52_57.sh"
 echo "OK playbooks 52–57 validation"
