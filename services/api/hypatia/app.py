@@ -7,6 +7,7 @@ from .config import get_settings
 from .glimmer import run_glimmer_swarm
 from .meta_client import MetaClient
 from .models import CreateSessionResponse, RunResponse, Session
+from .observer import run_observer
 from .pipeline import create_session, run_full_pipeline
 from .store import store
 
@@ -68,6 +69,15 @@ def get_session(session_id: str) -> Session:
     if not session:
         raise HTTPException(404, "session not found")
     return session
+
+
+@app.post("/api/sessions/{session_id}/observe", response_model=RunResponse)
+async def observe_session(session_id: str) -> RunResponse:
+    session = store.get(session_id)
+    if not session:
+        raise HTTPException(404, "session not found")
+    session = await run_observer(session)
+    return RunResponse(session=session)
 
 
 @app.post("/api/sessions/{session_id}/run", response_model=RunResponse)

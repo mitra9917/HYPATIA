@@ -25,6 +25,8 @@ export type Session = {
     narration: string;
     sam_prompts: string[];
     suggested_domain: string;
+    candidate_variables?: string[];
+    objects?: { name: string; why_interesting: string }[];
   } | null;
   hypotheses: Hypothesis[];
   experiment?: {

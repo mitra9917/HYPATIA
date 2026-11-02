@@ -87,6 +87,27 @@ export default function HomePage() {
           </div>
         )}
 
+        {session?.scene && (
+          <div className="panel" style={{ marginBottom: "1rem" }}>
+            <h2>Observer — SceneBrief</h2>
+            <p className="meta">
+              domain {session.scene.suggested_domain} · SAM prompts for measurer
+            </p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginTop: "0.5rem" }}>
+              {session.scene.sam_prompts.map((p) => (
+                <span key={p} className="pill">
+                  {p}
+                </span>
+              ))}
+            </div>
+            {session.scene.candidate_variables?.length ? (
+              <p className="meta" style={{ marginTop: "0.75rem" }}>
+                variables: {session.scene.candidate_variables.join(", ")}
+              </p>
+            ) : null}
+          </div>
+        )}
+
         <div className="grid two">
           <div className="panel">
             <h2>Imagination audit</h2>

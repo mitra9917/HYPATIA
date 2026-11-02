@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import json
 import uuid
 from pathlib import Path
 
@@ -9,8 +8,6 @@ from .meta_client import MetaClient, upload_bytes_to_s3
 from .models import (
     ImaginationFrame,
     Notebook,
-    SceneBrief,
-    SceneObject,
     Session,
     SessionStatus,
     Track,
@@ -22,6 +19,7 @@ from .science import (
     propose_experiment,
     synthesize_pendulum_track,
 )
+from .observer import run_observer
 from .store import store
 
 
@@ -81,82 +79,7 @@ async def run_full_pipeline(session_id: str, domain_hint: str | None = None) -> 
 
 
 async def _observe(session: Session, client: MetaClient, settings: Settings) -> None:
-    session.status = SessionStatus.observing
-    _event(session, "observe", "Watching the clip — naming objects and variables")
-
-    if session.mode == "fixture" or not client.enabled:
-        session.scene = SceneBrief(
-            objects=[
-                SceneObject(name="pendulum bob", why_interesting="periodic motion"),
-                SceneObject(name="string", why_interesting="length may enter the law"),
-                SceneObject(name="A4 sheet", why_interesting="scale calibration"),
-            ],
-            candidate_variables=["angle", "length", "period", "mass?"],
-            sam_prompts=["pendulum bob", "string", "A4 sheet"],
-            suggested_domain="mechanics.pendulum",
-            narration="Something is swinging. Measuring angle and length. Using the A4 sheet for scale.",
-        )
-        session.meta_calls.append({"model": "fixture", "kind": "observer", "ok": True})
-        store.put(session)
-        return
-
-    schema = {
-        "name": "SceneBrief",
-        "schema": {
-            "type": "object",
-            "properties": {
-                "objects": {
-                    "type": "array",
-                    "items": {
-                        "type": "object",
-                        "properties": {
-                            "name": {"type": "string"},
-                            "why_interesting": {"type": "string"},
-                        },
-                        "required": ["name", "why_interesting"],
-                        "additionalProperties": False,
-                    },
-                },
-                "candidate_variables": {"type": "array", "items": {"type": "string"}},
-                "sam_prompts": {"type": "array", "items": {"type": "string"}},
-                "suggested_domain": {"type": "string"},
-                "narration": {"type": "string"},
-            },
-            "required": [
-                "objects",
-                "candidate_variables",
-                "sam_prompts",
-                "suggested_domain",
-                "narration",
-            ],
-            "additionalProperties": False,
-        },
-    }
-    prompt = (
-        "You are HYPATIA's Observer. Given a desk science video (pendulum-like), "
-        "return JSON SceneBrief with open-vocabulary SAM prompts for measuring motion and scale."
-    )
-    try:
-        text, log = client.respond_text(
-            model=settings.observer_model,
-            input_payload=prompt,
-            instructions="Return only valid JSON matching the schema.",
-            json_schema=schema,
-        )
-        session.meta_calls.append(log)
-        data = json.loads(text)
-        session.scene = SceneBrief.model_validate(data)
-    except Exception as exc:  # noqa: BLE001
-        _event(session, "observe", f"Live Observer failed ({exc}); using fixture scene")
-        session.mode = "hybrid"
-        session.scene = SceneBrief(
-            objects=[SceneObject(name="pendulum bob", why_interesting="periodic motion")],
-            candidate_variables=["angle", "length", "period"],
-            sam_prompts=["pendulum bob", "A4 sheet"],
-            suggested_domain="mechanics.pendulum",
-            narration="Fallback scene brief after live Observer error.",
-        )
-    store.put(session)
+    await run_observer(session, settings)
 
 
 async def _measure(session: Session, client: MetaClient, settings: Settings) -> None:
@@ -171,7 +94,7 @@ async def _measure(session: Session, client: MetaClient, settings: Settings) -> 
     # until real video decoding is wired for the uploaded file.
     if client.enabled and session.mode == "live":
         try:
-            _, log = client.segment_video_stub_prompt(prompts[0])
+            _, log = client.segment_video_stub_prompt(prompts[0], file_id=session.video_file_id)
             session.meta_calls.append(log)
             _event(session, "measure", "SAM probe succeeded — using calibrated track extraction")
         except Exception as exc:  # noqa: BLE001
