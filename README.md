@@ -80,6 +80,8 @@ Storage / compute backup: **AWS S3** (+ ECS/EC2 if Modal unavailable). See [`doc
 | Muse Voice Transcribe | Hands-free (wired next) |
 | Muse Code | Build acceleration |
 
+**Test videos:** rights and filenames → [`data/videos/SOURCES.md`](data/videos/SOURCES.md) (run `./scripts/verify_video_corpus.sh`).
+
 ---
 
 ## Docs
