@@ -6,12 +6,10 @@ Use **Playbook #** from the **[Build Playbook project](https://github.com/users/
 
 | Playbook # | Issue | Title | Status |
 | ---: | ---: | --- | --- |
-| **31** | [**26**](https://github.com/mitra9917/HYPATIA/issues/26) | P3.1 Predictor | this PR |
-| **32** | [**27**](https://github.com/mitra9917/HYPATIA/issues/27) | P3.2 Muse Image ghost | this PR |
-| **33** | [**28**](https://github.com/mitra9917/HYPATIA/issues/28) | P3.3 SAM imagination audit | this PR |
-| 36+ | (board) | Continue after 33 | pending |
+| **36** | [**59**](https://github.com/mitra9917/HYPATIA/issues/59) | P2.10 Observer narration in UI | this PR |
+| **37+** | (board) | Continue after 36 | pending |
 
-**Done through playbook 30** (#20 Glimmer). **34 & 35** completed out of band on the board — then backfill **31–33** before **36**.
+**Done through playbook 33** (#28 SAM audit). **34 & 35** completed out of band on the board.
 
 ---
 

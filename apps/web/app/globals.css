@@ -440,6 +440,43 @@ input {
   }
 }
 
+.observer-lab-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr);
+  gap: 1rem;
+  align-items: start;
+  margin-top: 0.75rem;
+}
+
+@media (max-width: 720px) {
+  .observer-lab-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.observer-narration {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0.85rem 1rem;
+  background: rgba(61, 255, 181, 0.06);
+}
+
+.observer-narration__label {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.observer-narration__text {
+  margin: 0;
+  font-size: clamp(1rem, 2.8vw, 1.15rem);
+  line-height: 1.55;
+  color: var(--law);
+  font-family: var(--font-body);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before {

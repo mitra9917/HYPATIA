@@ -32,5 +32,5 @@
     "pivot clamp mount"
   ],
   "suggested_domain": "mechanics.pendulum",
-  "narration": "Fallback scene brief after live Observer error."
+  "narration": "A desk pendulum is swinging under gravity. Track the bob with SAM, measure angle versus time, and test whether period scales with length like a simple harmonic oscillator—not with bob mass."
 }

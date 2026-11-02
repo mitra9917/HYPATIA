@@ -30,6 +30,8 @@ def test_pendulum_fixture_has_sam_prompts() -> None:
     assert len(brief.sam_prompts) >= 1
     assert any("pendulum" in p.lower() or "bob" in p.lower() for p in brief.sam_prompts)
     assert brief.suggested_domain == "mechanics.pendulum"
+    assert brief.narration.strip()
+    assert "fallback" not in brief.narration.lower()
 
 
 def test_run_observer_fixture_mode() -> None:
@@ -48,4 +50,5 @@ def test_observe_endpoint(client: TestClient) -> None:
     assert resp.status_code == 200
     body = resp.json()["session"]
     assert body["scene"]["sam_prompts"]
+    assert body["scene"]["narration"].strip()
     assert body["status"] == "observing"

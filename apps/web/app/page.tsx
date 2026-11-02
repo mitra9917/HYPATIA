@@ -12,10 +12,12 @@ import { WebcamCapture } from "@/components/WebcamCapture";
 import {
   connectSessionEvents,
   createSession,
+  getSession,
   health,
   resumeSession,
   runSessionWithProgress,
 } from "@/lib/api";
+import { ObserverNarration } from "@/components/ObserverNarration";
 import type { PipelineStage } from "@/lib/pipeline";
 import type { StepperKey } from "@/lib/pipeline";
 import type { HealthInfo, Session } from "@/lib/types";
@@ -64,7 +66,12 @@ export default function HomePage() {
     disconnectRef.current = connectSessionEvents(sessionId, {
       onActiveStep: setActiveStep,
       onStageStarted: (d) => setProgressLabel(d.stage ? `${d.stage}…` : "Running…"),
-      onStageCompleted: () => setProgressLabel(null),
+      onStageCompleted: (d) => {
+        setProgressLabel(null);
+        if (d.stage === "observe") {
+          void getSession(sessionId).then(setSession).catch(() => {});
+        }
+      },
       onStageFailed: (d) => setProgressLabel(d.error ? String(d.error).slice(0, 80) : "Stage failed"),
     });
   }
@@ -187,34 +194,38 @@ export default function HomePage() {
           />
         ) : null}
 
-        {session?.scene && (
-          <div className="panel" style={{ marginBottom: "1rem" }}>
-            <h2>Observer — SceneBrief</h2>
-            <p className="meta">
-              domain {session.scene.suggested_domain} · SAM prompts for measurer
-            </p>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginTop: "0.5rem" }}>
-              {session.scene.sam_prompts.map((p) => (
-                <span key={p} className="pill">
-                  {p}
-                </span>
-              ))}
+        {session && (
+          <div className="panel observer-panel" style={{ marginBottom: "1rem" }}>
+            <h2>Observer — what the camera sees</h2>
+            <div className={session.tracks?.length ? "observer-lab-grid" : undefined}>
+              <ObserverNarration
+                narration={session.scene?.narration ?? ""}
+                domain={session.scene?.suggested_domain}
+                placeholder={
+                  session.scene?.narration ? undefined : "Spark Observer narrates after the watch step…"
+                }
+              />
+              {session.tracks?.length ? <TrackOverlay tracks={session.tracks} /> : null}
             </div>
-            {session.scene.candidate_variables?.length ? (
-              <p className="meta" style={{ marginTop: "0.75rem" }}>
-                variables: {session.scene.candidate_variables.join(", ")}
-              </p>
+            {session.scene && !session.tracks?.length ? (
+              <>
+                <p className="meta" style={{ marginTop: "0.75rem" }}>
+                  SAM prompts for measurer
+                </p>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", marginTop: "0.5rem" }}>
+                  {session.scene.sam_prompts.map((p) => (
+                    <span key={p} className="pill">
+                      {p}
+                    </span>
+                  ))}
+                </div>
+              </>
+            ) : null}
+            {session.tracks?.length ? (
+              <TrajectoryChart points={session.tracks[0]?.points} title="Pendulum angle vs time" />
             ) : null}
           </div>
         )}
-
-        {session?.tracks?.length ? (
-          <div className="panel" style={{ marginBottom: "1rem" }}>
-            <h2>Measurer — SAM track</h2>
-            <TrackOverlay tracks={session.tracks} />
-            <TrajectoryChart points={session.tracks[0]?.points} title="Pendulum angle vs time" />
-          </div>
-        ) : null}
 
         <div className="grid two">
           <div className="panel">
@@ -227,9 +238,6 @@ export default function HomePage() {
                 source={session.imagination[0].source} · SAM-style audit error ≈{" "}
                 {session.imagination[0].audit_error_m} m · session {session.id.slice(0, 8)}
               </p>
-            )}
-            {session?.scene?.narration && (
-              <p style={{ marginTop: "0.85rem", color: "var(--fog)" }}>{session.scene.narration}</p>
             )}
           </div>
 
