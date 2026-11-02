@@ -24,6 +24,8 @@ Also:
 - [GLIMMER_SWARM.md](./GLIMMER_SWARM.md) — P2.2 Glimmer theorist batch + providers (issue #20)
 - [PI_ORCHESTRATION.md](./PI_ORCHESTRATION.md) — P2.3 Wonder PI phase plans (issue #21)
 - [GHOST_PIPELINE.md](./GHOST_PIPELINE.md) — M3 predictor + imagine + SAM audit (#26–#28)
+- [MODAL_INTEGRATION.md](./MODAL_INTEGRATION.md) — Playbook #50 Modal volume/secrets (issue #47)
+- [GITHUB_ACTIONS_SECRETS.md](./GITHUB_ACTIONS_SECRETS.md) — Playbook #51 CI deploy secrets (issue #49)
 - [PLAYBOOK_ISSUE_MAP.md](./PLAYBOOK_ISSUE_MAP.md) — board Playbook # → issue #
 - [../demo/DEMO_SCRIPT.md](../demo/DEMO_SCRIPT.md) — 3-minute video script
 - [../AGENTS.md](../AGENTS.md) — coding conventions for humans and agents

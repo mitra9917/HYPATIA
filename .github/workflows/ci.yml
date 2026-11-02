@@ -28,6 +28,12 @@ jobs:
       - name: Video corpus SOURCES.md (P1.8)
         working-directory: .
         run: bash scripts/verify_video_corpus.sh
+      - name: Playbooks 50–51 integration scaffold
+        working-directory: .
+        run: |
+          bash scripts/verify_modal_integration.sh
+          bash scripts/verify_github_actions_secrets.sh
+          pytest tests/test_integration_playbook_50_51.py -q
 
   web-build:
     runs-on: ubuntu-latest
