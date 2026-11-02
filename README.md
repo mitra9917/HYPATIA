@@ -53,6 +53,7 @@ modal deploy services/api/modal_app.py
 ```
 
 Open-weight failover: Baseten or Fireworks (`GLIMMER_PROVIDER=baseten|fireworks`).  
+**Glimmer swarm:** default `GLIMMER_PROVIDER=stub` for CI; switch to `modal` after deploy for demo. See [`docs/GLIMMER_SWARM.md`](docs/GLIMMER_SWARM.md).  
 Storage / compute backup: **AWS S3** (+ ECS/EC2 if Modal unavailable). See [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md).
 
 ---
