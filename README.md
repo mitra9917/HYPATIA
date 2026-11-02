@@ -46,7 +46,7 @@ What you can run today, with no API key:
 cp .env.example .env
 ./scripts/run_api_local.sh
 # second terminal
-cd apps/web && npm ci && npm run dev
+./scripts/run_web_local.sh
 ```
 
 Open `http://localhost:3000`, leave fixture mode on, and run the desk pendulum demo. The UI shows a stage stepper, observer narration, a trajectory chart, rival hypothesis cards, a geometric ghost overlay, an experiment prompt, and a notebook download after the accept gate passes.
