@@ -19,7 +19,6 @@ import json
 import time
 from typing import Any
 
-import httpx
 from openai import OpenAI
 
 from .config import Settings
@@ -108,7 +107,7 @@ class MetaClient:
                 model,
                 "responses",
                 started,
-                {"ok": True, **_usage_fields(resp)},
+                {"ok": True, **self._usage_fields(resp)},
             )
             return text, log
         except Exception as exc:  # noqa: BLE001
@@ -126,7 +125,7 @@ class MetaClient:
                     model,
                     "chat.completions_fallback",
                     started,
-                    {"ok": True, "note": str(exc)[:120], **_usage_fields(chat)},
+                    {"ok": True, "note": str(exc)[:120], **self._usage_fields(chat)},
                 )
                 return text, log
             except Exception as exc2:  # noqa: BLE001
@@ -178,7 +177,7 @@ class MetaClient:
                 self.settings.meta_sam_model,
                 "sam",
                 started,
-                {"ok": True, "chars": len(text), "file_id": file_id, **_usage_fields(resp)},
+                {"ok": True, "chars": len(text), "file_id": file_id, **self._usage_fields(resp)},
             )
             return {"raw": text}, log
         except Exception as exc:  # noqa: BLE001
