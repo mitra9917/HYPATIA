@@ -1,7 +1,12 @@
-import type { Session } from "./types";
+import {
+  PIPELINE_STAGES,
+  type PipelineStage,
+  type StepperKey,
+} from "./pipeline";
+import type { HealthInfo, LawSummary, Session, SessionEventPayload } from "./types";
 
 /** In browser, set NEXT_PUBLIC_API_ORIGIN=http://127.0.0.1:8000 to skip Next rewrite (long Meta stages). */
-function apiUrl(path: string): string {
+export function apiUrl(path: string): string {
   const base = process.env.NEXT_PUBLIC_API_ORIGIN?.replace(/\/$/, "");
   if (typeof window !== "undefined" && base) {
     return `${base}${path}`;
@@ -19,14 +24,14 @@ async function parse<T>(res: Response): Promise<T> {
         message = j.detail;
       }
     } catch {
-      // e.g. plain "Internal Server Error" from proxy — not JSON
+      // plain text proxy errors
     }
     throw new Error(message);
   }
   return res.json() as Promise<T>;
 }
 
-export async function health(): Promise<Record<string, unknown>> {
+export async function health(): Promise<HealthInfo> {
   return parse(await fetch(apiUrl("/api/health"), { cache: "no-store" }));
 }
 
@@ -38,22 +43,43 @@ export async function createSession(file?: File): Promise<Session> {
   return data.session;
 }
 
-const PIPELINE_STAGES = [
-  "observe",
-  "measure",
-  "hypothesize",
-  "imagine",
-  "experiment",
-  "accept",
-] as const;
+export async function getSession(sessionId: string): Promise<Session> {
+  return parse(await fetch(apiUrl(`/api/sessions/${sessionId}`), { cache: "no-store" }));
+}
 
-export async function runSession(id: string): Promise<Session> {
-  // Stage-by-stage avoids long single /run proxy timeouts in local dev (Meta calls can take minutes).
+export async function runStage(sessionId: string, stage: PipelineStage): Promise<Session> {
+  const res = await fetch(apiUrl(`/api/sessions/${sessionId}/${stage}`), { method: "POST" });
+  const data = await parse<{ session: Session }>(res);
+  return data.session;
+}
+
+export async function resumeSession(sessionId: string, fromStage: PipelineStage): Promise<Session> {
+  const q = new URLSearchParams({ from_stage: fromStage });
+  const res = await fetch(apiUrl(`/api/sessions/${sessionId}/run?${q}`), { method: "POST" });
+  const data = await parse<{ session: Session }>(res);
+  return data.session;
+}
+
+export type StageProgress = {
+  stage: PipelineStage;
+  phase: "started" | "completed" | "failed";
+  session: Session;
+};
+
+export async function runSessionWithProgress(
+  id: string,
+  onProgress?: (progress: StageProgress) => void,
+): Promise<Session> {
   let session: Session | null = null;
   for (const stage of PIPELINE_STAGES) {
-    const res = await fetch(apiUrl(`/api/sessions/${id}/${stage}`), { method: "POST" });
-    const data = await parse<{ session: Session }>(res);
-    session = data.session;
+    onProgress?.({
+      stage,
+      phase: "started",
+      session: session ?? ({ id, status: "created" } as Session),
+    });
+    session = await runStage(id, stage);
+    const phase = session.status === "failed" ? "failed" : "completed";
+    onProgress?.({ stage, phase, session });
     if (session.status === "failed") {
       throw new Error(session.error || `Pipeline failed at ${stage}`);
     }
@@ -64,8 +90,85 @@ export async function runSession(id: string): Promise<Session> {
   return session;
 }
 
+/** @deprecated use runSessionWithProgress */
+export async function runSession(id: string): Promise<Session> {
+  return runSessionWithProgress(id);
+}
+
 export async function observeSession(id: string): Promise<Session> {
-  const res = await fetch(apiUrl(`/api/sessions/${id}/observe`), { method: "POST" });
-  const data = await parse<{ session: Session }>(res);
-  return data.session;
+  return runStage(id, "observe");
+}
+
+export async function listLaws(): Promise<LawSummary[]> {
+  const data = await parse<{ laws: LawSummary[] }>(await fetch(apiUrl("/api/library/laws")));
+  return data.laws;
+}
+
+export type SessionEventHandlers = {
+  onSnapshot?: (data: SessionEventPayload) => void;
+  onStageStarted?: (data: SessionEventPayload) => void;
+  onStageCompleted?: (data: SessionEventPayload) => void;
+  onStageFailed?: (data: SessionEventPayload) => void;
+  onActiveStep?: (step: StepperKey) => void;
+};
+
+function stageToStep(stage: string): StepperKey {
+  const map: Record<string, StepperKey> = {
+    observe: "observe",
+    measure: "measure",
+    hypothesize: "hypothesize",
+    imagine: "imagine",
+    experiment: "experiment",
+    accept: "accept",
+  };
+  return map[stage] ?? "created";
+}
+
+/** Subscribe to `GET /api/sessions/{id}/events` (SSE). Returns cleanup. */
+export function connectSessionEvents(sessionId: string, handlers: SessionEventHandlers): () => void {
+  if (typeof EventSource === "undefined") {
+    return () => {};
+  }
+  const es = new EventSource(apiUrl(`/api/sessions/${sessionId}/events`));
+
+  const bind = (name: string, fn?: (data: SessionEventPayload) => void) => {
+    es.addEventListener(name, (ev) => {
+      try {
+        const data = JSON.parse((ev as MessageEvent).data) as SessionEventPayload;
+        fn?.(data);
+        if (data.stage && handlers.onActiveStep) {
+          handlers.onActiveStep(stageToStep(String(data.stage)));
+        }
+      } catch {
+        // ignore malformed SSE payloads
+      }
+    });
+  };
+
+  bind("snapshot", (data) => {
+    handlers.onSnapshot?.(data);
+    if (data.status && handlers.onActiveStep) {
+      const status = String(data.status);
+      const statusStep: Record<string, StepperKey> = {
+        created: "created",
+        observing: "observe",
+        measuring: "measure",
+        hypothesizing: "hypothesize",
+        imagining: "imagine",
+        experimenting: "experiment",
+        accepted: "accept",
+        failed: "created",
+      };
+      handlers.onActiveStep(statusStep[status] ?? "created");
+    }
+  });
+  bind("stage_started", handlers.onStageStarted);
+  bind("stage_completed", handlers.onStageCompleted);
+  bind("stage_failed", handlers.onStageFailed);
+
+  es.onerror = () => {
+    // EventSource retries; UI still driven by stage POST responses
+  };
+
+  return () => es.close();
 }

@@ -1,22 +1,42 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { FixtureModeBanner } from "@/components/FixtureModeBanner";
 import { GhostCanvas } from "@/components/GhostCanvas";
+import { PipelineStepper } from "@/components/PipelineStepper";
+import { SessionErrorPanel } from "@/components/SessionErrorPanel";
 import { TrackOverlay } from "@/components/TrackOverlay";
-import { createSession, health, runSession } from "@/lib/api";
-import type { Session } from "@/lib/types";
+import {
+  connectSessionEvents,
+  createSession,
+  health,
+  resumeSession,
+  runSessionWithProgress,
+} from "@/lib/api";
+import type { PipelineStage } from "@/lib/pipeline";
+import type { StepperKey } from "@/lib/pipeline";
+import type { HealthInfo, Session } from "@/lib/types";
+
+function eventLine(e: { stage?: string; message?: string; event?: string; error?: string }): string {
+  const head = e.stage || e.event || "event";
+  const body = e.message || e.error || "";
+  return body ? `${head} — ${body}` : head;
+}
 
 export default function HomePage() {
   const [session, setSession] = useState<Session | null>(null);
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState<string | null>(null);
-  const [healthInfo, setHealthInfo] = useState<Record<string, unknown> | null>(null);
+  const [healthInfo, setHealthInfo] = useState<HealthInfo | null>(null);
+  const [activeStep, setActiveStep] = useState<StepperKey>("created");
+  const [progressLabel, setProgressLabel] = useState<string | null>(null);
+  const disconnectRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     health()
       .then(setHealthInfo)
       .catch(() => setHealthInfo({ ok: false }));
+    return () => disconnectRef.current?.();
   }, []);
 
   const ghost = session?.imagination?.[0]?.ghost_polyline;
@@ -36,20 +56,64 @@ export default function HomePage() {
     }));
   }, [session?.tracks, ghost]);
 
+  function attachEvents(sessionId: string) {
+    disconnectRef.current?.();
+    disconnectRef.current = connectSessionEvents(sessionId, {
+      onActiveStep: setActiveStep,
+      onStageStarted: (d) => setProgressLabel(d.stage ? `${d.stage}…` : "Running…"),
+      onStageCompleted: () => setProgressLabel(null),
+      onStageFailed: (d) => setProgressLabel(d.error ? String(d.error).slice(0, 80) : "Stage failed"),
+    });
+  }
+
+  async function runPipeline(sessionId: string) {
+    return runSessionWithProgress(sessionId, ({ stage, phase, session: s }) => {
+      setSession(s);
+      if (phase === "started") {
+        setProgressLabel(`${stage}…`);
+      }
+    });
+  }
+
   async function onRun(file?: File) {
     setBusy(true);
     setErr(null);
+    setProgressLabel("Creating session…");
     try {
       const created = await createSession(file);
       setSession(created);
-      const ran = await runSession(created.id);
+      setActiveStep("created");
+      attachEvents(created.id);
+      const ran = await runPipeline(created.id);
       setSession(ran);
+      setProgressLabel(null);
     } catch (e) {
       setErr(e instanceof Error ? e.message : "Run failed");
     } finally {
       setBusy(false);
     }
   }
+
+  async function onResume(fromStage: PipelineStage) {
+    if (!session) return;
+    setBusy(true);
+    setErr(null);
+    attachEvents(session.id);
+    try {
+      const ran = await resumeSession(session.id, fromStage);
+      setSession(ran);
+      if (ran.status === "failed") {
+        throw new Error(ran.error || "Resume failed");
+      }
+    } catch (e) {
+      setErr(e instanceof Error ? e.message : "Resume failed");
+    } finally {
+      setBusy(false);
+      setProgressLabel(null);
+    }
+  }
+
+  const showStepper = Boolean(session) || busy;
 
   return (
     <main>
@@ -68,7 +132,7 @@ export default function HomePage() {
         </p>
         <div className="cta-row">
           <button className="btn" disabled={busy} onClick={() => onRun()}>
-            {busy ? "Running scientific loop…" : "Run desk pendulum demo"}
+            {busy ? progressLabel || "Running scientific loop…" : "Run desk pendulum demo"}
           </button>
           <label className="btn secondary" style={{ cursor: busy ? "wait" : "pointer" }}>
             Upload clip
@@ -84,6 +148,11 @@ export default function HomePage() {
             />
           </label>
         </div>
+        {busy && progressLabel ? (
+          <p className="meta progress-line" aria-live="polite">
+            {progressLabel}
+          </p>
+        ) : null}
         <p className="meta" style={{ marginTop: "1rem" }}>
           mode: {String(healthInfo?.fixture_mode ? "fixture-ready" : "live-capable")} · deploy: Meta
           API → Modal → Baseten/Fireworks → AWS
@@ -91,12 +160,18 @@ export default function HomePage() {
       </section>
 
       <section className="lab shell" id="lab">
-        {err && (
-          <div className="panel" style={{ borderColor: "rgba(255,107,61,0.5)" }}>
-            <strong>Error</strong>
-            <pre className="meta">{err}</pre>
-          </div>
-        )}
+        {showStepper && session ? (
+          <PipelineStepper session={session} activeStep={activeStep} busy={busy} />
+        ) : null}
+
+        {err ? (
+          <SessionErrorPanel
+            message={err}
+            session={session}
+            busy={busy}
+            onResume={session?.status === "failed" ? onResume : undefined}
+          />
+        ) : null}
 
         {session?.scene && (
           <div className="panel" style={{ marginBottom: "1rem" }}>
@@ -201,9 +276,7 @@ export default function HomePage() {
             )}
             <div className="events" style={{ marginTop: "0.75rem" }}>
               {(session?.events || []).map((e, i) => (
-                <div key={`${e.stage}-${i}`}>
-                  <strong>{e.stage}</strong> — {e.message}
-                </div>
+                <div key={`${e.stage ?? e.event}-${i}`}>{eventLine(e)}</div>
               ))}
             </div>
           </div>
