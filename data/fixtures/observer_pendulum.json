@@ -1,11 +1,36 @@
 {
   "objects": [
-    { "name": "pendulum bob", "why_interesting": "periodic motion" },
-    { "name": "string", "why_interesting": "length may enter the law" },
-    { "name": "A4 sheet", "why_interesting": "scale calibration" }
+    {
+      "name": "pendulum_bob",
+      "why_interesting": "primary moving mass whose trajectory defines oscillation"
+    },
+    {
+      "name": "pendulum_string",
+      "why_interesting": "defines effective length and angle of swing"
+    },
+    {
+      "name": "pivot_mount",
+      "why_interesting": "fixed reference point for angle and period measurement"
+    },
+    {
+      "name": "background_scale",
+      "why_interesting": "provides spatial reference for displacement calibration"
+    }
   ],
-  "candidate_variables": ["angle", "length", "period", "mass?"],
-  "sam_prompts": ["pendulum bob", "string", "A4 sheet"],
+  "candidate_variables": [
+    "pendulum_angle",
+    "angular_velocity",
+    "oscillation_period",
+    "string_length",
+    "bob_x_position",
+    "bob_y_position",
+    "swing_amplitude"
+  ],
+  "sam_prompts": [
+    "round pendulum bob weight",
+    "thin pendulum string line",
+    "pivot clamp mount"
+  ],
   "suggested_domain": "mechanics.pendulum",
-  "narration": "Something is swinging. Measuring angle and length. Using the A4 sheet for scale."
+  "narration": "Fallback scene brief after live Observer error."
 }
