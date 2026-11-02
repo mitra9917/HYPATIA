@@ -1,0 +1,51 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "If true, only run integration verify scripts"
+        type: boolean
+        default: true
+  push:
+    branches: [main]
+    paths:
+      - "services/api/modal_app.py"
+      - ".github/workflows/deploy.yml"
+
+jobs:
+  verify-integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Playbook #50 Modal scaffold verify
+        run: bash scripts/verify_modal_integration.sh
+      - name: Playbook #51 GH Actions secrets doc verify
+        run: bash scripts/verify_github_actions_secrets.sh
+
+  deploy-modal:
+    needs: verify-integration
+    if: >-
+      github.event_name == 'workflow_dispatch' &&
+      inputs.dry_run == false &&
+      secrets.MODAL_TOKEN_ID != '' &&
+      secrets.MODAL_TOKEN_SECRET != ''
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Modal CLI
+        run: pip install modal
+      - name: modal deploy
+        working-directory: services/api
+        env:
+          MODAL_TOKEN_ID: ${{ secrets.MODAL_TOKEN_ID }}
+          MODAL_TOKEN_SECRET: ${{ secrets.MODAL_TOKEN_SECRET }}
+        run: |
+          modal token set --token-id "$MODAL_TOKEN_ID" --token-secret "$MODAL_TOKEN_SECRET"
+          modal deploy modal_app.py

@@ -15,6 +15,18 @@ app = modal.App("hypatia")
 
 weights = modal.Volume.from_name("hypatia-weights", create_if_missing=True)
 
+# --- S3 mount prep (issue #47 / Playbook #50) ---
+# After `hypatia-secrets` includes AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, S3_BUCKET:
+#
+#   media_bucket = modal.CloudBucketMount(
+#       bucket_name="your-bucket",
+#       secret=modal.Secret.from_name("hypatia-secrets"),
+#       read_only=False,
+#   )
+#   volumes={"/weights": weights, "/media": media_bucket}
+#
+# Until mounted, FastAPI uses boto3 + env from the same secret (see hypatia/meta_client upload).
+
 image = (
     modal.Image.debian_slim(python_version="3.12")
     .apt_install("libgl1", "libglib2.0-0")

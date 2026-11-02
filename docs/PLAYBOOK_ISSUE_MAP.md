@@ -18,17 +18,24 @@ Use **Playbook #** from the **[Build Playbook project](https://github.com/users/
 | **43** | [**32**](https://github.com/mitra9917/HYPATIA/issues/32) | P3.7 Voice loop (`/api/voice/turn`) | done (#92) |
 | **44** | [**59**](https://github.com/mitra9917/HYPATIA/issues/59) | P2.10 Observer narration in UI | done (#91) |
 
-**Next up after this PR:** playbook **50+** per board.
+**Next up:** playbook **52+** after #50–#51 land.
 
 ## Board rows 45–49
 
 | Playbook # | Issue | Title | Status |
 | ---: | ---: | --- | --- |
-| **45** | [**33**](https://github.com/mitra9917/HYPATIA/issues/33) | P3.8 Hybrid fixture/live ops switch | this PR |
-| **46** | [**24**](https://github.com/mitra9917/HYPATIA/issues/24) | P2.6 Lab notebook markdown export | this PR |
-| **47** | [**60**](https://github.com/mitra9917/HYPATIA/issues/60) | P3.9 Law library UI + chart | this PR |
-| **48** | [**62**](https://github.com/mitra9917/HYPATIA/issues/62) | P3.11 Upload consent banner | this PR |
-| **49** | [**61**](https://github.com/mitra9917/HYPATIA/issues/61) | P3.10 Voice WebSocket ASR | this PR |
+| **45** | [**33**](https://github.com/mitra9917/HYPATIA/issues/33) | P3.8 Hybrid fixture/live ops switch | done (#93) |
+| **46** | [**24**](https://github.com/mitra9917/HYPATIA/issues/24) | P2.6 Lab notebook markdown export | done (#93) |
+| **47** | [**60**](https://github.com/mitra9917/HYPATIA/issues/60) | P3.9 Law library UI + chart | done (#93) |
+| **48** | [**62**](https://github.com/mitra9917/HYPATIA/issues/62) | P3.11 Upload consent banner | done (#93) |
+| **49** | [**61**](https://github.com/mitra9917/HYPATIA/issues/61) | P3.10 Voice WebSocket ASR | done (#93) |
+
+## Board rows 50–51
+
+| Playbook # | Issue | Title | Status |
+| ---: | ---: | --- | --- |
+| **50** | [**47**](https://github.com/mitra9917/HYPATIA/issues/47) | Modal Secrets + Volume + S3 prep | this PR |
+| **51** | [**49**](https://github.com/mitra9917/HYPATIA/issues/49) | GitHub Actions secrets (CI deploy) | this PR |
 
 ---
 
