@@ -35,10 +35,20 @@ export async function health(): Promise<HealthInfo> {
   return parse(await fetch(apiUrl("/api/health"), { cache: "no-store" }));
 }
 
-export async function createSession(file?: File): Promise<Session> {
+export type SessionSource = "fixture" | "upload" | "webcam";
+
+export async function createSession(file?: File, source?: SessionSource): Promise<Session> {
+  if (!file) {
+    const res = await fetch(apiUrl("/api/sessions"), { method: "POST" });
+    const data = await parse<{ session: Session }>(res);
+    return data.session;
+  }
   const body = new FormData();
-  if (file) body.append("file", file);
-  const res = await fetch(apiUrl("/api/sessions"), { method: "POST", body: file ? body : undefined });
+  body.append("file", file);
+  if (source === "webcam" || source === "upload") {
+    body.append("source_type", source);
+  }
+  const res = await fetch(apiUrl("/api/sessions"), { method: "POST", body });
   const data = await parse<{ session: Session }>(res);
   return data.session;
 }

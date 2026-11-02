@@ -77,12 +77,15 @@ export default function HomePage() {
     });
   }
 
-  async function onRun(file?: File) {
+  async function onRun(file?: File, source: "upload" | "webcam" | "fixture" = "fixture") {
     setBusy(true);
     setErr(null);
     setProgressLabel("Creating session…");
     try {
-      const created = await createSession(file);
+      const created =
+        source === "fixture" && !file
+          ? await createSession()
+          : await createSession(file, source === "webcam" ? "webcam" : "upload");
       setSession(created);
       setActiveStep("created");
       attachEvents(created.id);
@@ -133,7 +136,7 @@ export default function HomePage() {
           the future, then ask for the one experiment that matters.
         </p>
         <div className="cta-row">
-          <button className="btn" disabled={busy} onClick={() => onRun()}>
+          <button className="btn" disabled={busy} onClick={() => void onRun(undefined, "fixture")}>
             {busy ? progressLabel || "Running scientific loop…" : "Run desk pendulum demo"}
           </button>
           <label className="btn secondary" style={{ cursor: busy ? "wait" : "pointer" }}>
@@ -145,15 +148,11 @@ export default function HomePage() {
               disabled={busy}
               onChange={(e) => {
                 const f = e.target.files?.[0];
-                if (f) void onRun(f);
+                if (f) void onRun(f, "upload");
               }}
             />
           </label>
-          <WebcamCapture
-            disabled={busy}
-            onCapture={(file) => void onRun(file)}
-            onError={(msg) => setErr(msg)}
-          />
+          <WebcamCapture disabled={busy} onCapture={(file) => void onRun(file, "webcam")} />
         </div>
         {busy && progressLabel ? (
           <p className="meta progress-line" aria-live="polite">

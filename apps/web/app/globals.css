@@ -329,6 +329,29 @@ input {
   flex-direction: column;
   gap: 0.5rem;
   align-items: flex-start;
+  max-width: 320px;
+}
+
+.webcam-hint {
+  margin: 0;
+  line-height: 1.4;
+}
+
+.burst-length {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  width: 100%;
+}
+
+.burst-length input[type="range"] {
+  width: 100%;
+  accent-color: var(--signal);
+}
+
+.webcam-fallback {
+  color: var(--ember);
+  margin: 0;
 }
 
 .webcam-preview {

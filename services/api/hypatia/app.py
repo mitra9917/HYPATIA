@@ -4,7 +4,7 @@ import asyncio
 
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, File, HTTPException, Query, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse, StreamingResponse
 
@@ -82,10 +82,18 @@ def health() -> dict:
 
 
 @app.post("/api/sessions", response_model=CreateSessionResponse)
-async def post_session(file: UploadFile | None = File(default=None)) -> CreateSessionResponse:
+async def post_session(
+    file: UploadFile | None = File(default=None),
+    source_type: str | None = Form(default=None),
+) -> CreateSessionResponse:
     raw = await file.read() if file is not None else None
     filename = file.filename if file is not None else "webcam-or-fixture"
-    source = "upload" if file is not None else "fixture"
+    if file is None:
+        source = "fixture"
+    elif source_type in ("webcam", "upload"):
+        source = source_type
+    else:
+        source = "upload"
     session = await create_session(filename=filename, source_type=source, raw=raw)
     return CreateSessionResponse(session=session)
 
