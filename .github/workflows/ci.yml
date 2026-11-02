@@ -24,7 +24,7 @@ jobs:
       - name: Install API deps
         run: pip install -r requirements.txt pytest
       - name: P1.1 scaffold tests
-        run: pytest tests/test_scaffold.py tests/test_meta_client.py tests/test_observer.py tests/test_meta_files.py tests/test_orchestrator.py tests/test_measurer.py -q
+        run: pytest tests/test_scaffold.py tests/test_meta_client.py tests/test_observer.py tests/test_meta_files.py tests/test_orchestrator.py tests/test_measurer.py tests/test_sam_decode.py -q
 
   web-build:
     runs-on: ubuntu-latest

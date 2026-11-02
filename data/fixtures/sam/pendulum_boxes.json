@@ -1,0 +1,29 @@
+{
+  "media": { "width": 1280, "height": 720, "fps": 30 },
+  "boxes": [
+    {
+      "object_id": "1",
+      "frame_index": 0,
+      "left": 620,
+      "top": 380,
+      "right": 680,
+      "bottom": 440
+    },
+    {
+      "object_id": "1",
+      "frame_index": 3,
+      "left": 640,
+      "top": 360,
+      "right": 700,
+      "bottom": 420
+    },
+    {
+      "object_id": "1",
+      "frame_index": 6,
+      "left": 660,
+      "top": 350,
+      "right": 720,
+      "bottom": 410
+    }
+  ]
+}

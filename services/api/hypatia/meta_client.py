@@ -160,13 +160,16 @@ class MetaClient:
             raise RuntimeError(f"Meta Files API upload failed: {exc}") from exc
 
     def segment_video_stub_prompt(self, prompt: str, file_id: str | None = None) -> tuple[dict[str, Any], dict[str, Any]]:
-        """Call SAM 3.1 when possible; callers must handle failure → fixture tracks."""
+        """Non-streaming SAM fallback when streaming path unavailable."""
         if not self._client:
             raise RuntimeError("MODEL_API_KEY not set")
+        if not file_id:
+            raise RuntimeError("SAM 3 video requires input_video file_id")
         started = time.time()
-        content: list[dict[str, Any]] = [{"type": "input_text", "text": prompt}]
-        if file_id:
-            content.append({"type": "input_video", "file_id": file_id})
+        content: list[dict[str, Any]] = [
+            {"type": "input_video", "file_id": file_id},
+            {"type": "input_text", "text": prompt},
+        ]
         try:
             resp = self._client.responses.create(
                 model=self.settings.meta_sam_model,
@@ -186,6 +189,38 @@ class MetaClient:
                 "sam",
                 started,
                 {"ok": False, "error": str(exc)[:200], "file_id": file_id},
+            )
+            raise RuntimeError(str(exc)) from exc
+
+    async def segment_video_tracked(
+        self,
+        prompt: str,
+        *,
+        file_id: str,
+        media_size: tuple[int, int],
+    ) -> tuple[list[Any], dict[str, Any]]:
+        """Stream SAM 3.1 video + meta_sam_parser decode (Playbook #19)."""
+        if not self._client:
+            raise RuntimeError("MODEL_API_KEY not set")
+        from .sam_live import segment_video_async
+
+        try:
+            masks, log = await segment_video_async(
+                self._client,
+                self.settings,
+                prompt=prompt,
+                file_id=file_id,
+                media_size=media_size,
+                session_id=self.session_id,
+            )
+            return masks, log
+        except Exception as exc:  # noqa: BLE001
+            started = time.time()
+            log = self._log(
+                self.settings.meta_sam_model,
+                "sam",
+                started,
+                {"ok": False, "error": str(exc)[:200], "file_id": file_id, "stream": True},
             )
             raise
 
