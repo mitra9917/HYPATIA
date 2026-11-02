@@ -30,7 +30,7 @@ type Props = {
 /** SAM mask boxes with frame scrubber (P1.7 / #16). */
 export function TrackOverlay({ tracks }: Props) {
   const track = tracks?.[0];
-  const frames = track?.mask_frames ?? [];
+  const frames = useMemo(() => track?.mask_frames ?? [], [track?.mask_frames]);
   const [frameIdx, setFrameIdx] = useState(0);
 
   const active = useMemo(() => {

@@ -1,0 +1,32 @@
+# Keep Modal API warm during finals judging (Playbook #58 / issue #66).
+# Set repository secret HYPATIA_API_URL=https://your-modal-url (no trailing slash).
+
+name: Warm health ping
+
+on:
+  workflow_dispatch:
+  schedule:
+    # Every 15 minutes during UTC finals window (adjust as needed)
+    - cron: "*/15 * * * *"
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: GET /api/health
+        env:
+          HYPATIA_API_URL: ${{ secrets.HYPATIA_API_URL }}
+        run: |
+          if [[ -z "${HYPATIA_API_URL}" ]]; then
+            echo "HYPATIA_API_URL secret not set — skipping ping (OK for fork CI)"
+            exit 0
+          fi
+          url="${HYPATIA_API_URL%/}/api/health"
+          start=$(date +%s%3N)
+          curl -fsS --max-time 10 "$url" | python3 -c "import sys,json; d=json.load(sys.stdin); assert d.get('ok') is True"
+          end=$(date +%s%3N)
+          ms=$((end - start))
+          echo "health_ok latency_ms=${ms}"
+          if (( ms > 3000 )); then
+            echo "WARN: latency above 3s target — enable MODAL_FINALS_WARM=1 on deploy"
+          fi

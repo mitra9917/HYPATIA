@@ -1,0 +1,7 @@
+HYPATIA Meta API cost report (estimate)
+  sessions: 2
+  meta_calls: 10
+  estimated spend: $0.1619
+  hackathon envelope: $150 (remaining ~$149.84)
+  by_model: {'sam-3.1': 0.114, 'muse-image-1.0': 0.03, 'muse-wonder-1.0': 0.015, 'muse-spark-1.3-contributor': 0.0019, 'stub': 0.001, 'fixture': 0.0}
+  by_kind: {'sam': 0.114, 'image': 0.03, 'pi': 0.015, 'observer': 0.0019, 'glimmer': 0.001}

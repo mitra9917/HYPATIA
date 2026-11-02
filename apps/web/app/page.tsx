@@ -25,6 +25,7 @@ import {
 } from "@/lib/api";
 import { HypothesisCard } from "@/components/HypothesisCard";
 import { ObserverNarration } from "@/components/ObserverNarration";
+import { SubmissionPackBanner } from "@/components/SubmissionPackBanner";
 import { VoiceMic } from "@/components/VoiceMic";
 import type { PipelineStage } from "@/lib/pipeline";
 import type { StepperKey } from "@/lib/pipeline";
@@ -182,6 +183,7 @@ export default function HomePage() {
       />
       <OpsModeBanner ops={healthInfo?.ops} onModeChange={refreshHealth} />
       <EthicsConsentBanner checked={uploadConsent} onChange={setUploadConsent} />
+      <SubmissionPackBanner />
       {healthErr ? (
         <div className="fixture-banner shell" role="alert">
           <strong>API not connected</strong>

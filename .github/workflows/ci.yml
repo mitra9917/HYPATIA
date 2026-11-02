@@ -22,17 +22,33 @@ jobs:
           cache: pip
           cache-dependency-path: services/api/requirements.txt
       - name: Install API deps
-        run: pip install -r requirements.txt pytest
-      - name: P1.1 scaffold tests
-        run: pytest tests/test_scaffold.py tests/test_meta_client.py tests/test_observer.py tests/test_meta_files.py tests/test_orchestrator.py tests/test_measurer.py tests/test_sam_decode.py tests/test_calibration.py tests/test_postgres_store.py tests/test_video_corpus.py tests/test_glimmer.py tests/test_pi.py tests/test_scoring_gate.py tests/test_geometric_fallback.py tests/test_experiment_routes.py tests/test_voice_turn.py tests/test_accept_gate.py tests/contract/test_api_contract.py tests/test_ops_mode.py tests/test_notebook_export.py tests/test_law_library.py tests/test_upload_consent.py tests/test_voice_realtime.py tests/test_integration_playbook_50_51.py -q
+        run: pip install -r requirements.txt pytest ruff
+      - name: Ruff (critical rules on API package)
+        run: ruff check hypatia --select E9,F821,F822,F823 --quiet
+      - name: P1 scaffold + playbook integration tests
+        run: >-
+          pytest tests/test_scaffold.py tests/test_meta_client.py tests/test_observer.py
+          tests/test_meta_files.py tests/test_orchestrator.py tests/test_measurer.py
+          tests/test_sam_decode.py tests/test_calibration.py tests/test_postgres_store.py
+          tests/test_video_corpus.py tests/test_glimmer.py tests/test_pi.py tests/test_scoring_gate.py
+          tests/test_geometric_fallback.py tests/test_experiment_routes.py tests/test_voice_turn.py
+          tests/test_accept_gate.py tests/contract/test_api_contract.py tests/test_ops_mode.py
+          tests/test_notebook_export.py tests/test_law_library.py tests/test_upload_consent.py
+          tests/test_voice_realtime.py tests/test_integration_playbook_50_51.py
+          tests/test_toolsmith.py tests/test_veritas.py tests/test_cells_domain.py
+          tests/test_tool_library_api.py tests/test_demo_reliability_ops.py
+          tests/test_integration_playbook_52_57.py tests/test_integration_playbook_58_62.py -q
       - name: Video corpus SOURCES.md (P1.8)
         working-directory: .
         run: bash scripts/verify_video_corpus.sh
-      - name: Playbooks 50–51 integration scaffold
+      - name: Playbooks 50–51 Modal + GH secrets scaffold
         working-directory: .
         run: |
           bash scripts/verify_modal_integration.sh
           bash scripts/verify_github_actions_secrets.sh
+      - name: Playbooks 58–62 submission pack
+        working-directory: .
+        run: bash scripts/verify_playbook_58_62.sh
 
   web-build:
     runs-on: ubuntu-latest
@@ -43,8 +59,8 @@ jobs:
           node-version: "22"
           cache: npm
           cache-dependency-path: apps/web/package-lock.json
-      - name: Build Next.js lab UI
+      - name: Lint + build Next.js lab UI
         working-directory: apps/web
-        run: npm ci && npm run build
+        run: npm ci && npx eslint . --max-warnings 0 && npm run build
         env:
           API_ORIGIN: http://127.0.0.1:8000

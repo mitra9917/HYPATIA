@@ -1,0 +1,32 @@
+{
+  "name": "desk-mechanics",
+  "clips": [
+    {
+      "id": "pendulum_desk_fixture",
+      "true_law": "T = 2π√(L/g)",
+      "recovered_fixture": "T = 2π√(L/g)",
+      "g_or_key": "g ≈ 9.8 ± 0.4 m/s²",
+      "active_experiments": 1,
+      "ghost_mae_m": 0.011,
+      "held_out_pass": true
+    },
+    {
+      "id": "pendulum_length_sweep",
+      "true_law": "T ∝ √L",
+      "recovered_fixture": "T = 2π√(L/g)",
+      "g_or_key": "g ≈ 9.6–10.1 m/s²",
+      "active_experiments": 1,
+      "ghost_mae_m": 0.014,
+      "held_out_pass": true
+    },
+    {
+      "id": "ai_fake_freefall_veritas",
+      "true_law": "uniform g ≈ 9.8 m/s²",
+      "recovered_fixture": "VERITAS: not_physical @ frame 41",
+      "g_or_key": "measured 6.1 m/s²",
+      "active_experiments": 0,
+      "ghost_mae_m": null,
+      "held_out_pass": true
+    }
+  ]
+}
