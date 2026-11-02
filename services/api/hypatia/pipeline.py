@@ -67,27 +67,9 @@ async def create_session(*, filename: str | None, source_type: str, raw: bytes |
 
 
 async def run_full_pipeline(session_id: str, domain_hint: str | None = None) -> Session:
-    settings = get_settings()
-    session = store.get(session_id)
-    if not session:
-        raise KeyError(session_id)
+    from .orchestrator import run_full_pipeline_orchestrated
 
-    client = MetaClient(settings, session_id=session_id)
-    session.domain_hint = domain_hint or "mechanics.pendulum"
-
-    try:
-        await _observe(session, client, settings)
-        await _measure(session, client, settings)
-        await _hypothesize(session, client, settings)
-        await _imagine(session, client, settings)
-        await _experiment(session, client, settings)
-        await _accept(session)
-        session.status = SessionStatus.accepted
-    except Exception as exc:  # noqa: BLE001
-        session.status = SessionStatus.failed
-        session.error = str(exc)
-        _event(session, "failed", str(exc))
-    return store.put(session)
+    return await run_full_pipeline_orchestrated(session_id, domain_hint=domain_hint)
 
 
 async def _observe(session: Session, client: MetaClient, settings: Settings) -> None:
