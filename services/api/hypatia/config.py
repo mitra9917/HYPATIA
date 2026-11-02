@@ -36,6 +36,7 @@ class Settings(BaseSettings):
     database_url: str = ""
 
     fixture_mode: bool = True
+    fixture_record: bool = False
     cors_origins: str = "*"
     port: int = 8000
 

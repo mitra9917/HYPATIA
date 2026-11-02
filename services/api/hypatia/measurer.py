@@ -282,5 +282,10 @@ async def run_measurer(session: Session, client: MetaClient, settings: Settings 
         f"SI calibration ({track.calibration_method}): m/px={track.metres_per_pixel:.6f}, "
         f"{len(track.points)} samples, {len(track.mask_frames)} mask frames, L≈{length_m} m",
     )
+    if settings.fixture_record and session.tracks:
+        from .fixture_recorder import record_session_slice
+
+        paths = record_session_slice(session, width=media_w, height=media_h, fps=track.fps or frame_cost.source_fps)
+        _event(session, f"Fixture slice recorded: {', '.join(paths.keys())}")
     store.put(session)
     return session

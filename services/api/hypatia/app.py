@@ -67,6 +67,8 @@ def health() -> dict:
         "ok": True,
         "service": "hypatia-api",
         "fixture_mode": settings.effective_fixture_mode,
+        "replay_mode": settings.effective_fixture_mode,
+        "fixture_record": settings.fixture_record,
         "model_router": settings.model_router(),
         "pipeline_stages": list(PIPELINE_STAGES),
         "glimmer_provider": settings.glimmer_provider,
