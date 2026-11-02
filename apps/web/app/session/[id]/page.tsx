@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { AcceptGatePanel } from "@/components/AcceptGatePanel";
@@ -132,10 +133,13 @@ export default function SessionDetailPage() {
                   ? ` · IoU ${session.imagination[0].audit_iou.toFixed(3)}`
                   : ""}
               </p>
-              <img
+              <Image
                 src={imaginationFrameUrl(session.id, 0)}
                 alt="Muse Image ghost frame or geometric placeholder"
-                style={{ maxWidth: "100%", marginTop: "0.5rem", borderRadius: 8, border: "1px solid var(--line)" }}
+                width={640}
+                height={360}
+                unoptimized
+                style={{ maxWidth: "100%", height: "auto", marginTop: "0.5rem", borderRadius: 8, border: "1px solid var(--line)" }}
               />
             </>
           ) : null}
