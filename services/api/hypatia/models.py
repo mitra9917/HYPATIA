@@ -86,6 +86,7 @@ class Session(BaseModel):
     mode: str = "fixture"  # live | hybrid | fixture
     domain_hint: str | None = None
     video_file_id: str | None = None
+    meta_file_ids: list[str] = Field(default_factory=list)
     scene: SceneBrief | None = None
     tracks: list[Track] = Field(default_factory=list)
     hypotheses: list[Hypothesis] = Field(default_factory=list)

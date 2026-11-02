@@ -1,4 +1,4 @@
-"""Observer agent — Muse Spark → SceneBrief (P1.3 / Playbook #15)."""
+"""Observer agent — Muse Spark → SceneBrief (P1.3 / Playbook #17, issue #12)."""
 
 from __future__ import annotations
 
@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 
 from .config import FIXTURE_DIR, Settings, get_settings
+from .meta_files import ensure_session_video_file_id, primary_video_file_id
 from .model_router import ModelRouter
 from .models import SceneBrief, SceneObject, Session, SessionStatus
 from .store import store
@@ -65,15 +66,6 @@ def _fallback_brief(message: str) -> SceneBrief:
     return brief
 
 
-def _read_session_video(session: Session) -> tuple[bytes, str] | None:
-    if not session.filename:
-        return None
-    path = Path(session.filename)
-    if not path.is_file():
-        return None
-    return path.read_bytes(), path.name
-
-
 def _event(session: Session, stage: str, message: str) -> None:
     session.events.append({"stage": stage, "message": message})
 
@@ -98,18 +90,14 @@ async def run_observer(session: Session, settings: Settings | None = None) -> Se
     )
     instructions = "Return only valid JSON matching the schema."
 
-    file_id: str | None = session.video_file_id
-    video = _read_session_video(session)
-    if video and not file_id:
-        data, name = video
-        try:
-            file_id, upload_log = router.upload_video_bytes(data, name)
-            session.video_file_id = file_id
-            session.meta_calls.append(upload_log)
-        except Exception as exc:  # noqa: BLE001
-            session.meta_calls.append(
-                {"model": "files", "kind": "files.create", "ok": False, "error": str(exc)[:200]}
-            )
+    try:
+        ensure_session_video_file_id(session, router, settings=settings)
+    except Exception as exc:  # noqa: BLE001
+        session.meta_calls.append(
+            {"model": "files", "kind": "files.create", "ok": False, "error": str(exc)[:200]}
+        )
+
+    file_id = primary_video_file_id(session)
 
     try:
         text, log = router.observe_scene(
