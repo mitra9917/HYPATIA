@@ -8,18 +8,27 @@ from fastapi import FastAPI, File, Form, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, PlainTextResponse, StreamingResponse
 
+from pydantic import BaseModel
+
 from .config import get_settings
 from .contributor_policy import contributor_policy_summary
 from .glimmer import run_glimmer_swarm
 from .imagination_media import imagination_frame_path
 from .meta_client import MetaClient
-from .models import CreateSessionResponse, RunResponse, Session
+from .models import CreateSessionResponse, ExperimentResult, RunResponse, Session
 from .orchestrator import PIPELINE_STAGES, StageGuardError, run_pipeline_from, run_pipeline_stage
 from .pipeline import create_session, run_full_pipeline
+from .scoring_gate import law_accept_gate
+from .science import propose_experiment
 from .session_events import format_sse, subscribe, unsubscribe
 from .store import init_store, store, store_kind
+from .voice import voice_turn
 
 settings = get_settings()
+
+
+def enrich_session(session: Session) -> Session:
+    return session.model_copy(update={"law_gate": law_accept_gate(session)})
 
 
 @asynccontextmanager
@@ -52,7 +61,7 @@ async def _run_stage(session_id: str, stage: str) -> RunResponse:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     except KeyError as exc:
         raise HTTPException(status_code=404, detail="session not found") from exc
-    return RunResponse(session=session)
+    return RunResponse(session=enrich_session(session))
 
 
 @app.get("/api/health")
@@ -130,7 +139,7 @@ def get_session(session_id: str) -> Session:
     session = store.get(session_id)
     if not session:
         raise HTTPException(404, "session not found")
-    return session
+    return enrich_session(session)
 
 
 @app.get("/api/sessions/{session_id}/events")
@@ -203,9 +212,64 @@ async def experiment_session(session_id: str) -> RunResponse:
     return await _run_stage(session_id, "experiment")
 
 
+    return RunResponse(session=session)
+
+
+class VoiceTurnBody(BaseModel):
+    session_id: str | None = None
+    transcript: str | None = None
+    audio_base64: str | None = None
+
+
+@app.post("/api/sessions/{session_id}/experiment/propose", response_model=RunResponse)
+async def experiment_propose(session_id: str) -> RunResponse:
+    session = store.get(session_id)
+    if not session:
+        raise HTTPException(404, "session not found")
+    if not session.hypotheses:
+        raise HTTPException(422, detail="hypothesize must complete first")
+    session.experiment = propose_experiment(session.hypotheses)
+    session.events.append({"stage": "experiment", "message": session.experiment.instruction[:240]})
+    store.put(session)
+    return RunResponse(session=enrich_session(session))
+
+
+@app.post("/api/sessions/{session_id}/experiment/result", response_model=RunResponse)
+async def experiment_result(session_id: str, body: ExperimentResult) -> RunResponse:
+    session = store.get(session_id)
+    if not session:
+        raise HTTPException(404, "session not found")
+    if session.experiment is None:
+        raise HTTPException(422, detail="call experiment/propose first")
+    session.experiment_result = body
+    msg = body.notes or "Experiment result recorded"
+    if body.observed_period_ratio is not None:
+        msg = f"Period ratio {body.observed_period_ratio:.2f}× — {msg}"
+    session.events.append({"stage": "experiment", "message": msg[:240]})
+    store.put(session)
+    return RunResponse(session=enrich_session(session))
+
+
+@app.post("/api/voice/turn")
+async def post_voice_turn(body: VoiceTurnBody) -> dict:
+    session = store.get(body.session_id) if body.session_id else None
+    if body.session_id and not session:
+        raise HTTPException(404, "session not found")
+    out = await voice_turn(
+        settings=settings,
+        session=session,
+        transcript=body.transcript,
+        audio_base64=body.audio_base64,
+    )
+    if session:
+        store.put(session)
+    return out
+
+
 @app.post("/api/sessions/{session_id}/accept", response_model=RunResponse)
 async def accept_session(session_id: str) -> RunResponse:
-    return await _run_stage(session_id, "accept")
+    resp = await _run_stage(session_id, "accept")
+    return RunResponse(session=enrich_session(resp.session))
 
 
 @app.post("/api/sessions/{session_id}/run", response_model=RunResponse)
@@ -223,9 +287,9 @@ async def run_session(
             session = await run_pipeline_from(session_id, from_stage, domain_hint=domain_hint)
         except StageGuardError as exc:
             raise HTTPException(status_code=422, detail=str(exc)) from exc
-        return RunResponse(session=session)
+        return RunResponse(session=enrich_session(session))
     session = await run_full_pipeline(session_id, domain_hint=domain_hint)
-    return RunResponse(session=session)
+    return RunResponse(session=enrich_session(session))
 
 
 @app.get("/api/library/laws")

@@ -118,6 +118,10 @@ async def _hypothesize(session: Session, client: MetaClient, settings: Settings)
         session.hypotheses = fit_rival_hypotheses(points, length)
         _event(session, "hypothesize", f"Tooling fallback ({exc}); fixture rivals only")
 
+    from .scoring_gate import attach_winner_bootstrap_ci
+
+    session.hypotheses = attach_winner_bootstrap_ci(session.hypotheses, points, length)
+
     store.put(session)
 
 
@@ -146,15 +150,20 @@ async def _imagine(session: Session, client: MetaClient, settings: Settings) -> 
                 f"Scientific visualization of a pendulum bob at the next predicted angle for law {winner.form_latex}"
             )
             session.meta_calls.append(log)
-            source = "muse_image"
-            _event(
-                session,
-                "imagine",
-                f"Muse Image frame (${log.get('image_spend_usd_est', 0.01):.2f} est.); SAM audit next",
-            )
+            if image_bytes:
+                source = "muse_image"
+                _event(
+                    session,
+                    "imagine",
+                    f"Muse Image frame (${log.get('image_spend_usd_est', 0.01):.2f} est.); SAM audit next",
+                )
+            else:
+                source = "geometric"
+                _event(session, "imagine", "Muse Image returned empty; geometric ghost fallback")
         except Exception as exc:  # noqa: BLE001
             session.meta_calls.append({"model": settings.meta_image_model, "ok": False, "error": str(exc)[:160]})
-            _event(session, "imagine", f"Muse Image unavailable ({exc}); geometric ghost")
+            source = "geometric"
+            _event(session, "imagine", f"Muse Image unavailable ({exc}); geometric ghost fallback")
     else:
         session.meta_calls.append(
             {
@@ -216,11 +225,21 @@ async def _experiment(session: Session, client: MetaClient, settings: Settings) 
 
 
 async def _accept(session: Session) -> None:
+    from .scoring_gate import assert_can_accept_law, bootstrap_g_ci, demo_g_display, track_points_for_session
+
+    assert_can_accept_law(session)
     winner = next((h for h in session.hypotheses if h.status == "winner"), None)
     if not winner:
         return
+    points, length_m = track_points_for_session(session)
+    if not winner.param_ci.get("g"):
+        lo, hi = bootstrap_g_ci(points, length_m)
+        winner.param_ci = {"g": [round(lo, 2), round(hi, 2)]}
     g = winner.params.get("g")
-    err = abs((g or 9.8) - 9.80665)
+    ci = winner.param_ci.get("g") or []
+    err_bar = abs((g or 9.8) - 9.80665)
+    if len(ci) == 2:
+        err_bar = (ci[1] - ci[0]) / 2
     md = "\n".join(
         [
             f"# HYPATIA Lab Notebook — session `{session.id}`",
@@ -231,8 +250,13 @@ async def _accept(session: Session) -> None:
             "## Accepted law",
             f"$${' '.join(winner.form_latex)}$$",
             "",
+            f"**Demo:** {demo_g_display(winner)}",
+            "",
             f"Parameters: `{winner.params}`",
-            f"Held-out score: `{winner.heldout_score:.4f}`",
+            f"Train R²: `{winner.train_score:.4f}` · Held-out R²: `{winner.heldout_score:.4f}`",
+            "",
+            "## Rivals eliminated",
+            ", ".join(h.form_latex for h in session.hypotheses if h.status == "eliminated"),
             "",
             "## Next experiment",
             session.experiment.instruction if session.experiment else "n/a",
@@ -247,7 +271,7 @@ async def _accept(session: Session) -> None:
         markdown=md,
         law_latex=winner.form_latex,
         params=winner.params,
-        error_bars={"g": round(err, 3)} if g is not None else {},
+        error_bars={"g": round(err_bar, 3)} if g is not None else {},
     )
-    _event(session, "accepted", f"Law locked: {winner.form_plain}")
+    _event(session, "accepted", f"Law locked: {demo_g_display(winner)}")
     store.put(session)

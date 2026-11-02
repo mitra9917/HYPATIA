@@ -15,6 +15,7 @@ from .pipeline import (
 )
 from .store import store
 from .session_events import publish
+from .scoring_gate import AcceptGateError
 
 # Ordered science loop (matches ARCHITECTURE §4)
 PIPELINE_STAGES: tuple[str, ...] = (
@@ -144,6 +145,12 @@ async def run_pipeline_stage(
             raise StageGuardError(stage, f"unknown stage: {stage}")
     except StageGuardError:
         raise
+    except AcceptGateError as exc:
+        session = store.get(session_id) or session
+        session.status = SessionStatus.failed
+        session.error = str(exc)
+        emit_stage_event(session, "stage_failed", stage, error=str(exc)[:240])
+        raise StageGuardError(stage, str(exc)) from exc
     except Exception as exc:  # noqa: BLE001
         session = store.get(session_id) or session
         session.status = SessionStatus.failed

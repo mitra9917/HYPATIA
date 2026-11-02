@@ -10,7 +10,7 @@ Read `docs/INDEX.md` before large changes.
 
 ## Playbook # vs GitHub issue #
 
-**These are not the same number.** When the user says “start playbook #N”, look up **`docs/PLAYBOOK_ISSUE_MAP.md`** (must match [Project #4](https://github.com/users/mitra9917/projects/4) **Playbook #**). Never assume `playbook N → issue N`.
+**These are not the same number.** When the user says “start playbook #N”, look up **`docs/PLAYBOOK_ISSUE_MAP.md`** (board rows 36–44 are **not** script steps 36–44). Never assume `playbook N → issue N`.
 
 Examples on the **board**: Playbook **#31** → issue **#26** (Predictor). Playbook **#32** → **#27**, **#33** → **#28**. Do not use the script step index alone.
 

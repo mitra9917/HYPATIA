@@ -2,20 +2,29 @@
 
 Use **Playbook #** from the **[Build Playbook project](https://github.com/users/mitra9917/projects/4)** table (sort ascending). That row number is what Mitrazzz means by “playbook N” — it is **not** the same as GitHub issue #.
 
-## Next up (M3 ghost chain)
+**Never use the script step index alone** — see `setup_github_project_playbook.py` table at bottom for automation-only mapping.
+
+## Board rows 36–44 (canonical daily order)
 
 | Playbook # | Issue | Title | Status |
 | ---: | ---: | --- | --- |
-| **36** | [**59**](https://github.com/mitra9917/HYPATIA/issues/59) | P2.10 Observer narration in UI | this PR |
-| **37+** | (board) | Continue after 36 | pending |
+| **36** | [**22**](https://github.com/mitra9917/HYPATIA/issues/22) | P2.4 Held-out scoring gate + bootstrap CIs | this PR |
+| **37** | [**29**](https://github.com/mitra9917/HYPATIA/issues/29) | P3.4 Geometric ghost fallback renderer | this PR |
+| **38** | [**58**](https://github.com/mitra9917/HYPATIA/issues/58) | P2.9 JSON schemas + API contract tests | this PR |
+| **39** | [**30**](https://github.com/mitra9917/HYPATIA/issues/30) | P3.5 Experiment Designer (`/experiment/propose`) | this PR |
+| **40** | [**23**](https://github.com/mitra9917/HYPATIA/issues/23) | P2.5 UI hypothesis cards + rival comparison | this PR |
+| **41** | [**31**](https://github.com/mitra9917/HYPATIA/issues/31) | P3.6 HITL experiment UI + `/experiment/result` | this PR |
+| **42** | [**57**](https://github.com/mitra9917/HYPATIA/issues/57) | P2.8 Accept law gates + POST `/accept` + UI commit | this PR |
+| **43** | [**32**](https://github.com/mitra9917/HYPATIA/issues/32) | P3.7 Voice loop (`/api/voice/turn`) | this PR |
+| **44** | [**59**](https://github.com/mitra9917/HYPATIA/issues/59) | P2.10 Observer narration in UI | done (#91) |
 
-**Done through playbook 33** (#28 SAM audit). **34 & 35** completed out of band on the board.
+**Next up after this PR:** playbook **45+** per board.
 
 ---
 
 # Full script mapping (`setup_github_project_playbook.py`)
 
-The script assigns a different **Playbook #** field (e.g. issue **#26** = script step **39**). Trust the **project board row / table above** for daily work; use the table below only when reconciling automation.
+Trust the **board table above** for daily work; use the table below only when reconciling automation.
 | Script step | Issue |
 | ---: | ---: |
 | 1 | [44](https://github.com/mitra9917/HYPATIA/issues/44) |
