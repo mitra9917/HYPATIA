@@ -74,7 +74,7 @@ Storage / compute backup: **AWS S3** (+ ECS/EC2 if Modal unavailable). See [`doc
 | Model | Job |
 | --- | --- |
 | Muse Spark 1.3 | Observer |
-| Muse Wonder | Principal Investigator / experiment phrasing |
+| Muse Wonder | Principal Investigator — phase plans (`pi.py`) + experiment phrasing |
 | Muse Image | Predicted-frame imagination |
 | SAM 3.1 | Measurement + audit probe |
 | Muse Glimmer (partners) | Hypothesis swarm on Modal/Baseten/Fireworks |
