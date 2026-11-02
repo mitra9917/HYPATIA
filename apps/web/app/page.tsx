@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { GhostCanvas } from "@/components/GhostCanvas";
+import { TrackOverlay } from "@/components/TrackOverlay";
 import { createSession, health, runSession } from "@/lib/api";
 import type { Session } from "@/lib/types";
 
@@ -21,13 +22,18 @@ export default function HomePage() {
   const winner = session?.hypotheses?.find((h) => h.status === "winner");
 
   const realProxy = useMemo(() => {
-    // UI-only proxy from ghost phase offset so the canvas always has a "measured" line in fixture demos
+    const pts = session?.tracks?.[0]?.points;
+    if (pts?.length) {
+      return pts
+        .filter((p) => p.x_m != null && p.y_m != null)
+        .map((p) => ({ x_m: p.x_m as number, y_m: p.y_m as number }));
+    }
     if (!ghost?.length) return undefined;
     return ghost.map((p, i) => ({
       x_m: p.x_m * 0.98 + (i % 7) * 0.0008,
       y_m: p.y_m * 0.98,
     }));
-  }, [ghost]);
+  }, [session?.tracks, ghost]);
 
   async function onRun(file?: File) {
     setBusy(true);
@@ -107,6 +113,13 @@ export default function HomePage() {
             ) : null}
           </div>
         )}
+
+        {session?.tracks?.length ? (
+          <div className="panel" style={{ marginBottom: "1rem" }}>
+            <h2>Measurer — SAM track</h2>
+            <TrackOverlay tracks={session.tracks} />
+          </div>
+        ) : null}
 
         <div className="grid two">
           <div className="panel">

@@ -41,3 +41,7 @@ demo/*.webm
 # Logs
 *.log
 evals/results/*.json
+
+# Per-session SAM track caches (keep *_default.json fixtures)
+data/fixtures/tracks/*
+!data/fixtures/tracks/*_default.json
