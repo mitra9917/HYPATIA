@@ -10,6 +10,7 @@ from pathlib import Path
 from .config import FIXTURE_DIR, Settings, get_settings
 from .meta_client import MetaClient
 from .meta_files import primary_video_file_id
+from .media_utils import session_media_size
 from .models import (
     BBoxNorm,
     FrameCostEstimate,
@@ -196,17 +197,30 @@ async def run_measurer(session: Session, client: MetaClient, settings: Settings 
 
     elif client.enabled and session.mode == "live":
         file_id = primary_video_file_id(session)
+        media_size = session_media_size(session)
         sam_masks: list[MaskFrame] = []
         started = time.time()
         try:
-            raw, log = client.segment_video_stub_prompt(primary_prompt, file_id=file_id)
-            log["latency_ms"] = int((time.time() - started) * 1000)
+            if file_id:
+                sam_masks, log = await client.segment_video_tracked(
+                    primary_prompt,
+                    file_id=file_id,
+                    media_size=media_size,
+                )
+                log["latency_ms"] = int((time.time() - started) * 1000)
+            else:
+                raw, log = client.segment_video_stub_prompt(primary_prompt, file_id=file_id)
+                log["latency_ms"] = int((time.time() - started) * 1000)
+                sam_masks = parse_sam_response(
+                    raw,
+                    width=media_size[0],
+                    height=media_size[1],
+                )
             session.meta_calls.append(log)
-            sam_masks = parse_sam_response(raw)
             source = "sam" if sam_masks else "hybrid"
             _event(
                 session,
-                f"SAM live call ok ({len(sam_masks)} mask frames parsed)"
+                f"SAM decoded {len(sam_masks)} mask frames (meta_sam_parser)"
                 if sam_masks
                 else "SAM returned no decodable masks — calibrated synthesis (hybrid)",
             )

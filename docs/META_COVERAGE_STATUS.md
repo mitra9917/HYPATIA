@@ -63,7 +63,7 @@ Update this file when a row moves stage; mirror checkboxes on #44.
 | JSON schema outputs | SCAFFOLD | SceneBrief in `pipeline._observe` | #58 |
 | Files API (video `file_id`) | NOT | — | #50 |
 | Images API | SCAFFOLD | `meta_client.generate_image` | #27 |
-| meta_sam_parser (Python) | NOT | not in `requirements.txt` | #51 |
+| meta_sam_parser (Python) | **IN** | `requirements.txt`, `sam_parser_bridge.py` | #51 |
 | @meta-sam/parser (web) | NOT | — | #51 |
 | Voice realtime WS | NOT | — | #59 |
 | Computer use (Wonder) | NOT | — | #38, #68 |
