@@ -70,6 +70,8 @@ class Track(BaseModel):
     fps: float = 30.0
     source: str = "fixture"  # sam | fixture | hybrid
     frame_cost: FrameCostEstimate | None = None
+    calibration_method: str = "default_fixture"
+    trajectory_csv: str | None = None
 
 
 class Hypothesis(BaseModel):

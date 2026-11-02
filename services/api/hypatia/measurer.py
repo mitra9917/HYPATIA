@@ -20,6 +20,7 @@ from .models import (
     Track,
     TrajectoryPoint,
 )
+from .calibration import apply_si_calibration, fixture_a4_mask
 from .sam_decode import parse_sam_response
 from .science import synthesize_pendulum_track
 from .store import store
@@ -260,10 +261,26 @@ async def run_measurer(session: Session, client: MetaClient, settings: Settings 
     if settings.effective_fixture_mode or session.mode in {"fixture", "hybrid"}:
         save_cached_track(session.id, primary_prompt, track)
 
+    media_w, media_h = session_media_size(session)
+    scale_prompt = next(
+        (p for p in prompts if "a4" in p.lower() or "sheet" in p.lower() or "coin" in p.lower()),
+        "A4 sheet",
+    )
+    scale_masks = [fixture_a4_mask()] if "a4" in scale_prompt.lower() or "sheet" in scale_prompt.lower() else []
+    track = apply_si_calibration(
+        track,
+        frame_width=media_w,
+        frame_height=media_h,
+        scale_masks=scale_masks or None,
+        scale_prompt=scale_prompt,
+        fallback_length_m=length_m,
+    )
+    session.tracks = [track]
+
     _event(
         session,
-        f"Trajectory ready: {len(track.points)} samples, {len(track.mask_frames)} mask frames, "
-        f"L≈{length_m} m, source={track.source}",
+        f"SI calibration ({track.calibration_method}): m/px={track.metres_per_pixel:.6f}, "
+        f"{len(track.points)} samples, {len(track.mask_frames)} mask frames, L≈{length_m} m",
     )
     store.put(session)
     return session
