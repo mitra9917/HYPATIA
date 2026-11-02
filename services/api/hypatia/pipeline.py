@@ -62,7 +62,7 @@ async def run_full_pipeline(session_id: str, domain_hint: str | None = None) -> 
     if not session:
         raise KeyError(session_id)
 
-    client = MetaClient(settings)
+    client = MetaClient(settings, session_id=session_id)
     session.domain_hint = domain_hint or "mechanics.pendulum"
 
     try:
