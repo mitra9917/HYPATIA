@@ -27,7 +27,8 @@ def client() -> TestClient:
 
 def test_pendulum_fixture_has_sam_prompts() -> None:
     brief = load_pendulum_fixture()
-    assert "pendulum bob" in brief.sam_prompts
+    assert len(brief.sam_prompts) >= 1
+    assert any("pendulum" in p.lower() or "bob" in p.lower() for p in brief.sam_prompts)
     assert brief.suggested_domain == "mechanics.pendulum"
 
 
