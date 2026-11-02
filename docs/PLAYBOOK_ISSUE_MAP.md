@@ -18,8 +18,6 @@ Use **Playbook #** from the **[Build Playbook project](https://github.com/users/
 | **43** | [**32**](https://github.com/mitra9917/HYPATIA/issues/32) | P3.7 Voice loop (`/api/voice/turn`) | done (#92) |
 | **44** | [**59**](https://github.com/mitra9917/HYPATIA/issues/59) | P2.10 Observer narration in UI | done (#91) |
 
-**Next up:** playbook **52+** after #50–#51 land.
-
 ## Board rows 45–49
 
 | Playbook # | Issue | Title | Status |
@@ -34,8 +32,21 @@ Use **Playbook #** from the **[Build Playbook project](https://github.com/users/
 
 | Playbook # | Issue | Title | Status |
 | ---: | ---: | --- | --- |
-| **50** | [**47**](https://github.com/mitra9917/HYPATIA/issues/47) | Modal Secrets + Volume + S3 prep | this PR |
-| **51** | [**49**](https://github.com/mitra9917/HYPATIA/issues/49) | GitHub Actions secrets (CI deploy) | this PR |
+| **50** | [**47**](https://github.com/mitra9917/HYPATIA/issues/47) | Modal Secrets + Volume + S3 prep | done (#94) |
+| **51** | [**49**](https://github.com/mitra9917/HYPATIA/issues/49) | GitHub Actions secrets (CI deploy) | done (#94) |
+
+## Board rows 52–57
+
+| Playbook # | Issue | Title | Status |
+| ---: | ---: | --- | --- |
+| **52** | [**34**](https://github.com/mitra9917/HYPATIA/issues/34) | P4.1 Toolsmith sandbox + unit test on frames | this PR (#95) |
+| **53** | [**35**](https://github.com/mitra9917/HYPATIA/issues/35) | P4.2 Law + tool library persistence + API | this PR (#95) |
+| **54** | [**36**](https://github.com/mitra9917/HYPATIA/issues/36) | P4.3 Cell time-lapse domain | this PR (#95) |
+| **55** | [**37**](https://github.com/mitra9917/HYPATIA/issues/37) | P4.4 VERITAS module | this PR (#95) |
+| **56** | [**64**](https://github.com/mitra9917/HYPATIA/issues/64) | P4.12 Demo reliability operator controls | this PR (#95) |
+| **57** | [**39**](https://github.com/mitra9917/HYPATIA/issues/39) | P4.6 Production deploy checklist | this PR (#95) |
+
+**Next up:** playbook **58+** after #95 lands.
 
 ---
 

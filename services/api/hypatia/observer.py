@@ -12,6 +12,7 @@ from .models import SceneBrief, SceneObject, Session, SessionStatus
 from .store import store
 
 OBSERVER_FIXTURE_PENDULUM = FIXTURE_DIR / "observer_pendulum.json"
+OBSERVER_FIXTURE_CELLS = FIXTURE_DIR / "observer_cells.json"
 
 SCENE_BRIEF_JSON_SCHEMA: dict = {
     "name": "SceneBrief",
@@ -47,6 +48,19 @@ SCENE_BRIEF_JSON_SCHEMA: dict = {
 }
 
 
+def load_cells_fixture() -> SceneBrief:
+    if OBSERVER_FIXTURE_CELLS.is_file():
+        data = json.loads(OBSERVER_FIXTURE_CELLS.read_text(encoding="utf-8"))
+        return SceneBrief.model_validate(data)
+    return SceneBrief(
+        objects=[SceneObject(name="cell_colony", why_interesting="logistic growth")],
+        candidate_variables=["colony_area", "doubling_time"],
+        sam_prompts=["bright cell colony cluster"],
+        suggested_domain="biology.cells",
+        narration="Default cell timelapse fixture.",
+    )
+
+
 def load_pendulum_fixture() -> SceneBrief:
     if OBSERVER_FIXTURE_PENDULUM.is_file():
         data = json.loads(OBSERVER_FIXTURE_PENDULUM.read_text(encoding="utf-8"))
@@ -58,6 +72,13 @@ def load_pendulum_fixture() -> SceneBrief:
         suggested_domain="mechanics.pendulum",
         narration="Default pendulum fixture.",
     )
+
+
+def load_observer_fixture(session: Session) -> SceneBrief:
+    hint = (session.domain_hint or "").lower()
+    if "cell" in hint or hint.startswith("biology"):
+        return load_cells_fixture()
+    return load_pendulum_fixture()
 
 
 def _fallback_brief(message: str) -> SceneBrief:
@@ -78,7 +99,7 @@ async def run_observer(session: Session, settings: Settings | None = None) -> Se
     _event(session, "observe", "Watching the clip — naming objects and variables")
 
     if session.mode == "fixture" or not router.enabled:
-        session.scene = load_pendulum_fixture()
+        session.scene = load_observer_fixture(session)
         session.meta_calls.append({"model": "fixture", "kind": "observer", "ok": True})
         return store.put(session)
 

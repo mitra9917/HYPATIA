@@ -93,7 +93,7 @@ def glimmer_swarm(payload: dict) -> dict:
 
 @app.function(image=image, timeout=60 * 5, memory=2048)
 def toolsmith_run(code: str, test_cmd: str = "python -c 'print(1)'") -> dict:
-    """Lightweight stand-in; prefer modal.Sandbox in production Toolsmith."""
+    """Local subprocess stand-in; production Toolsmith should use modal.Sandbox (no host network)."""
     import subprocess
     import tempfile
     from pathlib import Path

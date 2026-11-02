@@ -31,8 +31,17 @@ async function parse<T>(res: Response): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+function fetchWithTimeout(path: string, init: RequestInit = {}, timeoutMs = 120_000): Promise<Response> {
+  const signal =
+    init.signal ??
+    (typeof AbortSignal !== "undefined" && "timeout" in AbortSignal
+      ? AbortSignal.timeout(timeoutMs)
+      : undefined);
+  return fetch(apiUrl(path), { ...init, signal });
+}
+
 export async function health(): Promise<HealthInfo> {
-  return parse(await fetch(apiUrl("/api/health"), { cache: "no-store" }));
+  return parse(await fetchWithTimeout("/api/health", { cache: "no-store" }, 12_000));
 }
 
 export type SessionSource = "fixture" | "upload" | "webcam";
@@ -71,7 +80,7 @@ export async function createSession(
   opts?: { uploadConsent?: boolean },
 ): Promise<Session> {
   if (!file) {
-    const res = await fetch(apiUrl("/api/sessions"), { method: "POST" });
+    const res = await fetchWithTimeout("/api/sessions", { method: "POST" }, 30_000);
     const data = await parse<{ session: Session }>(res);
     return data.session;
   }
@@ -82,7 +91,7 @@ export async function createSession(
   }
   body.append("upload_consent", opts?.uploadConsent ? "true" : "false");
   body.append("consent_version", "hypatia-demo-2026");
-  const res = await fetch(apiUrl("/api/sessions"), { method: "POST", body });
+  const res = await fetchWithTimeout("/api/sessions", { method: "POST", body }, 60_000);
   const data = await parse<{ session: Session }>(res);
   return data.session;
 }
@@ -92,14 +101,21 @@ export async function getSession(sessionId: string): Promise<Session> {
 }
 
 export async function runStage(sessionId: string, stage: PipelineStage): Promise<Session> {
-  const res = await fetch(apiUrl(`/api/sessions/${sessionId}/${stage}`), { method: "POST" });
+  const res = await fetchWithTimeout(`/api/sessions/${sessionId}/${stage}`, { method: "POST" }, 180_000);
+  const data = await parse<{ session: Session }>(res);
+  return data.session;
+}
+
+/** Run the full pipeline in one API call (best for local demo; SSE still streams progress). */
+export async function runFullSession(sessionId: string): Promise<Session> {
+  const res = await fetchWithTimeout(`/api/sessions/${sessionId}/run`, { method: "POST" }, 300_000);
   const data = await parse<{ session: Session }>(res);
   return data.session;
 }
 
 export async function resumeSession(sessionId: string, fromStage: PipelineStage): Promise<Session> {
   const q = new URLSearchParams({ from_stage: fromStage });
-  const res = await fetch(apiUrl(`/api/sessions/${sessionId}/run?${q}`), { method: "POST" });
+  const res = await fetchWithTimeout(`/api/sessions/${sessionId}/run?${q}`, { method: "POST" }, 300_000);
   const data = await parse<{ session: Session }>(res);
   return data.session;
 }

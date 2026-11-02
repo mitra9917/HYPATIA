@@ -35,6 +35,14 @@ def test_health_ok_and_fixture_mode(client: TestClient) -> None:
     assert body["ok"] is True
     assert body["fixture_mode"] is True
     assert body["service"] == "hypatia-api"
+    assert body["meta"]["meta"] == "skipped"
+
+
+def test_health_meta_ping_query(client: TestClient) -> None:
+    r = client.get("/api/health", params={"meta_ping": "true"})
+    assert r.status_code == 200
+    assert r.json()["meta"]["meta"] is False
+    assert r.json()["meta"]["reason"] == "no key"
 
 
 def test_health_exposes_model_router(client: TestClient) -> None:

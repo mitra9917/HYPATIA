@@ -20,7 +20,7 @@ import {
   health,
   notebookDownloadUrl,
   resumeSession,
-  runSessionWithProgress,
+  runFullSession,
   submitExperimentResult,
 } from "@/lib/api";
 import { HypothesisCard } from "@/components/HypothesisCard";
@@ -55,12 +55,19 @@ export default function HomePage() {
   const [activeStep, setActiveStep] = useState<StepperKey>("created");
   const [progressLabel, setProgressLabel] = useState<string | null>(null);
   const [uploadConsent, setUploadConsent] = useState(false);
+  const [healthErr, setHealthErr] = useState<string | null>(null);
   const disconnectRef = useRef<(() => void) | null>(null);
 
   function refreshHealth() {
     void health()
-      .then(setHealthInfo)
-      .catch(() => setHealthInfo({ ok: false }));
+      .then((h) => {
+        setHealthInfo(h);
+        setHealthErr(null);
+      })
+      .catch((e) => {
+        setHealthInfo({ ok: false });
+        setHealthErr(e instanceof Error ? e.message : "API unreachable");
+      });
   }
 
   useEffect(() => {
@@ -102,12 +109,7 @@ export default function HomePage() {
   }
 
   async function runPipeline(sessionId: string) {
-    return runSessionWithProgress(sessionId, ({ stage, phase, session: s }) => {
-      setSession(s);
-      if (phase === "started") {
-        setProgressLabel(`${stage}…`);
-      }
-    });
+    return runFullSession(sessionId);
   }
 
   async function onRun(file?: File, source: "upload" | "webcam" | "fixture" = "fixture") {
@@ -128,11 +130,17 @@ export default function HomePage() {
       setSession(created);
       setActiveStep("created");
       attachEvents(created.id);
+      setProgressLabel("Running observe → accept…");
       const ran = await runPipeline(created.id);
       setSession(ran);
       setProgressLabel(null);
     } catch (e) {
-      setErr(e instanceof Error ? e.message : "Run failed");
+      const msg = e instanceof Error ? e.message : "Run failed";
+      if (msg.includes("abort") || msg.includes("AbortError") || msg.includes("timed out")) {
+        setErr("Request timed out — is ./scripts/run_api_local.sh running? Restart API and try again.");
+      } else {
+        setErr(msg);
+      }
     } finally {
       setBusy(false);
     }
@@ -174,6 +182,24 @@ export default function HomePage() {
       />
       <OpsModeBanner ops={healthInfo?.ops} onModeChange={refreshHealth} />
       <EthicsConsentBanner checked={uploadConsent} onChange={setUploadConsent} />
+      {healthErr ? (
+        <div className="fixture-banner shell" role="alert">
+          <strong>API not connected</strong>
+          <span>
+            {healthErr}. In another terminal run{" "}
+            <code>./scripts/run_api_local.sh</code>, keep{" "}
+            <code>apps/web/.env.local</code> as <code>NEXT_PUBLIC_API_ORIGIN=http://127.0.0.1:8000</code>
+            , use <code>http://localhost:3000</code> (not 127.0.0.1:3000), then restart{" "}
+            <code>npm run dev</code>.
+          </span>
+        </div>
+      ) : null}
+      {err ? (
+        <div className="fixture-banner shell" role="alert" style={{ borderColor: "var(--accent, #c44)" }}>
+          <strong>Run blocked</strong>
+          <span>{err}</span>
+        </div>
+      ) : null}
       <section className="hero shell">
         <p className="meta" style={{ marginBottom: "1.25rem" }}>
           META GLOBAL AI DEVELOPER HACKATHON · INDIE · PUSH THE FRONTIER
@@ -202,14 +228,20 @@ export default function HomePage() {
           </label>
           <WebcamCapture disabled={busy} onCapture={(file) => void onRun(file, "webcam")} />
         </div>
-        {busy && progressLabel ? (
+        {busy ? (
           <p className="meta progress-line" aria-live="polite">
-            {progressLabel}
+            {progressLabel || "Running scientific loop… (30–90s in fixture mode)"}
           </p>
         ) : null}
         <p className="meta" style={{ marginTop: "1rem" }}>
-          mode: {String(healthInfo?.fixture_mode ? "fixture-ready" : "live-capable")} · deploy: Meta
-          API → Modal → Baseten/Fireworks → AWS
+          mode:{" "}
+          {healthErr
+            ? "offline"
+            : healthInfo?.fixture_mode || healthInfo?.ops?.fixture_mode
+              ? "fixture-ready"
+              : "live-capable"}{" "}
+          · deploy: Meta API → Modal → Baseten/Fireworks → AWS
+          {healthInfo?.ok ? " · API ok" : healthErr ? "" : " · checking API…"}
         </p>
       </section>
 

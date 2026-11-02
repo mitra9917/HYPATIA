@@ -68,7 +68,7 @@ async def _run_stage(session_id: str, stage: str) -> RunResponse:
 
 
 @app.get("/api/health")
-def health() -> dict:
+def health(meta_ping: bool = False) -> dict:
     client = MetaClient(settings)
     glimmer_probe: dict = {"configured": settings.glimmer_provider}
     try:
@@ -90,7 +90,13 @@ def health() -> dict:
         "pipeline_stages": list(PIPELINE_STAGES),
         "glimmer_provider": settings.glimmer_provider,
         "glimmer": glimmer_probe,
-        "meta": client.health_ping() if settings.has_meta_key else {"meta": False, "reason": "no key"},
+        "meta": (
+            client.health_ping()
+            if meta_ping and settings.has_meta_key
+            else {"meta": False, "reason": "no key"}
+            if meta_ping
+            else {"meta": "skipped", "hint": "Pass ?meta_ping=1 to probe Meta API (slow)"}
+        ),
         "s3_configured": bool(settings.s3_bucket and settings.aws_access_key_id),
         "database_configured": bool(settings.database_url.strip()),
         "session_store": store_kind(),
@@ -104,6 +110,7 @@ async def post_session(
     source_type: str | None = Form(default=None),
     upload_consent: str = Form(default="false"),
     consent_version: str = Form(default="hypatia-demo-2026"),
+    domain_hint: str | None = Query(default=None),
 ) -> CreateSessionResponse:
     raw = await file.read() if file is not None else None
     filename = file.filename if file is not None else "webcam-or-fixture"
@@ -125,6 +132,7 @@ async def post_session(
         raw=raw,
         upload_consent=consent_ok,
         consent_version=consent_version,
+        domain_hint=domain_hint,
     )
     return CreateSessionResponse(session=session)
 
@@ -261,9 +269,6 @@ async def experiment_session(session_id: str) -> RunResponse:
     return await _run_stage(session_id, "experiment")
 
 
-    return RunResponse(session=session)
-
-
 class VoiceTurnBody(BaseModel):
     session_id: str | None = None
     transcript: str | None = None
@@ -362,3 +367,47 @@ def list_laws() -> dict:
                 }
             )
     return {"laws": laws, "count": len(laws)}
+
+
+@app.get("/api/library/tools")
+def list_tools() -> dict:
+    from .tool_library import list_tools as _list_tools
+
+    tools = _list_tools()
+    return {"tools": tools, "count": len(tools)}
+
+
+@app.post("/api/toolsmith/test-promoted")
+def post_toolsmith_test_promoted() -> dict:
+    """Run promoted pendulum tool unit test on fixture SAM track (Playbook #52 / #34)."""
+    from .toolsmith.runner import run_promoted_tool_test
+
+    result = run_promoted_tool_test()
+    if result.get("ok"):
+        from .tool_library import promote_tool
+
+        promote_tool({"id": result["tool_id"], "title": "Pendulum angle from track JSON"})
+    return result
+
+
+@app.post("/api/veritas/analyze")
+def post_veritas_analyze() -> dict:
+    """VERITAS verdict on AI fake-physics clip (fixture-backed demo)."""
+    from .veritas import analyze_clip
+
+    return analyze_clip(use_fixture=True)
+
+
+@app.get("/api/sessions/{session_id}/cells-notebook.md")
+def get_cells_notebook(session_id: str) -> PlainTextResponse:
+    from .domains.cells import cells_logistic_notebook_markdown
+
+    session = store.get(session_id)
+    if not session:
+        raise HTTPException(404, "session not found")
+    hint = (session.domain_hint or session.scene.suggested_domain if session.scene else "") or ""
+    if "cell" not in hint.lower() and not hint.startswith("biology"):
+        raise HTTPException(422, detail="session domain is not biology.cells — set domain_hint on create")
+    text = cells_logistic_notebook_markdown(session)
+    headers = {"Content-Disposition": f'attachment; filename="hypatia-{session_id[:8]}-cells.md"'}
+    return PlainTextResponse(text, media_type="text/markdown; charset=utf-8", headers=headers)

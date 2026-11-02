@@ -1,0 +1,25 @@
+{
+  "objects": [
+    {
+      "name": "cell_colony",
+      "why_interesting": "expanding front defines growth rate and carrying capacity"
+    },
+    {
+      "name": "microscope_field",
+      "why_interesting": "fixed FOV enables area-normalized cell count"
+    }
+  ],
+  "candidate_variables": [
+    "colony_area",
+    "cell_count_proxy",
+    "doubling_time",
+    "growth_rate_r",
+    "carrying_capacity_K"
+  ],
+  "sam_prompts": [
+    "bright cell colony cluster",
+    "microscopy well boundary"
+  ],
+  "suggested_domain": "biology.cells",
+  "narration": "Microscopy time-lapse: colony area grows then saturates. Fit logistic growth and estimate doubling time — same HYPATIA loop, new domain."
+}
