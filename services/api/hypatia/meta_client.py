@@ -39,6 +39,7 @@ class MetaClient:
             self._client = OpenAI(
                 api_key=settings.model_api_key,
                 base_url=settings.meta_base_url,
+                timeout=90.0,
             )
 
     @property

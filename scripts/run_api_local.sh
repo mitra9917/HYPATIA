@@ -17,7 +17,7 @@ if [[ -f .env ]]; then
   set +a
 fi
 export FIXTURE_MODE="${FIXTURE_MODE:-true}"
-export CORS_ORIGINS="${CORS_ORIGINS:-http://localhost:3000}"
+export CORS_ORIGINS="${CORS_ORIGINS:-http://localhost:3000,http://127.0.0.1:3000}"
 
 trap 'code=$?; if (( code != 0 )); then echo >&2; echo "HYPATIA API exited ($code). Fix errors above, then: ./scripts/run_api_local.sh" >&2; fi' EXIT
 

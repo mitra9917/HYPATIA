@@ -68,7 +68,7 @@ async def _run_stage(session_id: str, stage: str) -> RunResponse:
 
 
 @app.get("/api/health")
-def health() -> dict:
+def health(meta_ping: bool = False) -> dict:
     client = MetaClient(settings)
     glimmer_probe: dict = {"configured": settings.glimmer_provider}
     try:
@@ -90,7 +90,13 @@ def health() -> dict:
         "pipeline_stages": list(PIPELINE_STAGES),
         "glimmer_provider": settings.glimmer_provider,
         "glimmer": glimmer_probe,
-        "meta": client.health_ping() if settings.has_meta_key else {"meta": False, "reason": "no key"},
+        "meta": (
+            client.health_ping()
+            if meta_ping and settings.has_meta_key
+            else {"meta": False, "reason": "no key"}
+            if meta_ping
+            else {"meta": "skipped", "hint": "Pass ?meta_ping=1 to probe Meta API (slow)"}
+        ),
         "s3_configured": bool(settings.s3_bucket and settings.aws_access_key_id),
         "database_configured": bool(settings.database_url.strip()),
         "session_store": store_kind(),
