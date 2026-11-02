@@ -32,4 +32,15 @@ pytest services/api/tests/test_glimmer.py -q
 
 Use `GLIMMER_PROVIDER=modal` (or Baseten/Fireworks) before recording the demo video; keep `stub` in CI.
 
+```bash
+# Stub (CI default)
+python3 scripts/smoke_glimmer.py
+
+# After modal deploy
+GLIMMER_PROVIDER=modal python3 scripts/smoke_glimmer.py
+
+# With Wonder PI (needs MODEL_API_KEY)
+bash scripts/smoke_judge_meta.sh
+```
+
 DoD: **≥3** pendulum rival forms per session; provider switch documented here and in README.

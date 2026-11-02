@@ -26,4 +26,6 @@ Muse Wonder plans each major pipeline phase once; tool execution stays in Python
 ```bash
 export PYTHONPATH=services/api
 pytest services/api/tests/test_pi.py services/api/tests/test_orchestrator.py -q
+python3 scripts/smoke_wonder_pi.py   # live opt-in (MODEL_API_KEY)
+bash scripts/install_api_deps.sh     # local desk parity with CI
 ```

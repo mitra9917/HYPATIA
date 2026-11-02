@@ -5,13 +5,13 @@ from __future__ import annotations
 from .config import Settings, get_settings
 from .meta_client import MetaClient
 from .models import Session, SessionStatus
-from .observer import run_observer
 from .pipeline import (
     _accept,
     _experiment,
     _hypothesize,
     _imagine,
     _measure,
+    _observe,
 )
 from .store import store
 from .session_events import publish
@@ -122,7 +122,8 @@ async def run_pipeline_stage(
 
     try:
         if stage == "observe":
-            session = await run_observer(session, settings)
+            await _observe(session, client, settings)
+            session = store.get(session_id) or session
         elif stage == "measure":
             await _measure(session, client, settings)
             session = store.get(session_id) or session
