@@ -51,9 +51,20 @@ def init_store(settings: Settings | None = None) -> str:
     from .db import run_migrations
     from .postgres_store import PostgresSessionStore
 
-    run_migrations(url)
-    _store = PostgresSessionStore(url)
-    _store_kind = "postgres"
+    try:
+        run_migrations(url)
+        _store = PostgresSessionStore(url)
+        _store_kind = "postgres"
+    except Exception as exc:  # noqa: BLE001
+        # Demo reliability: bad DNS / Docker down / Supabase asleep → in-memory (AGENTS.md)
+        import logging
+
+        logging.getLogger(__name__).warning(
+            "DATABASE_URL set but Postgres unavailable (%s); using in-memory store",
+            exc,
+        )
+        _store = InMemoryStore()
+        _store_kind = "memory_fallback"
     return _store_kind
 
 

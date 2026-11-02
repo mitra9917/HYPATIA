@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import asyncio
+
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import PlainTextResponse
+from fastapi.responses import PlainTextResponse, StreamingResponse
 
 from .config import get_settings
 from .glimmer import run_glimmer_swarm
@@ -12,6 +14,7 @@ from .meta_client import MetaClient
 from .models import CreateSessionResponse, RunResponse, Session
 from .orchestrator import PIPELINE_STAGES, StageGuardError, run_pipeline_from, run_pipeline_stage
 from .pipeline import create_session, run_full_pipeline
+from .session_events import format_sse, subscribe, unsubscribe
 from .store import init_store, store, store_kind
 
 settings = get_settings()
@@ -104,6 +107,51 @@ def get_session(session_id: str) -> Session:
     if not session:
         raise HTTPException(404, "session not found")
     return session
+
+
+@app.get("/api/sessions/{session_id}/events")
+async def session_events_sse(session_id: str) -> StreamingResponse:
+    """Server-sent events for pipeline progress (observe → measure → …)."""
+    session = store.get(session_id)
+    if not session:
+        raise HTTPException(404, "session not found")
+
+    async def generate():
+        queue = subscribe(session_id)
+        try:
+            status = session.status.value if hasattr(session.status, "value") else str(session.status)
+            yield format_sse(
+                "snapshot",
+                {
+                    "session_id": session_id,
+                    "status": status,
+                    "pipeline_stages": list(PIPELINE_STAGES),
+                },
+            )
+            for entry in session.events[-30:]:
+                if not isinstance(entry, dict):
+                    continue
+                name = str(entry.get("event", "progress"))
+                yield format_sse(name, entry)
+            while True:
+                try:
+                    msg = await asyncio.wait_for(queue.get(), timeout=25.0)
+                except asyncio.TimeoutError:
+                    yield ": keepalive\n\n"
+                    continue
+                yield format_sse(msg["event"], msg["data"])
+        finally:
+            unsubscribe(session_id, queue)
+
+    return StreamingResponse(
+        generate(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
 
 
 @app.post("/api/sessions/{session_id}/observe", response_model=RunResponse)

@@ -15,6 +15,20 @@ Session, Observation, Track, Hypothesis, Experiment, ImaginationAudit, Tool, Law
 
 On API startup (and `docker compose` api `command`), migrations run automatically via `init_store()`.
 
+## Supabase (new account / production)
+
+Direct host `db.<ref>.supabase.co` is often **IPv6-only**. If local API fails with `failed to resolve host` or DNS errors, use the **Session pooler** string from the Supabase dashboard (port **5432**, user `postgres.<ref>`), with `?sslmode=require`.
+
+```bash
+# After updating DATABASE_URL in .env
+export PYTHONPATH=services/api
+python3 -m hypatia.db migrate
+./scripts/run_api_local.sh
+curl -s http://127.0.0.1:8000/api/health | jq .session_store   # expect "postgres"
+```
+
+Cursor’s Supabase MCP plugin may still be signed into an **older** org; reconnect it to the HYPATIA project if you want dashboard actions from the agent.
+
 ## Local
 
 ```bash
