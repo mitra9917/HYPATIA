@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import PlainTextResponse
 
 from .config import get_settings
 from .glimmer import run_glimmer_swarm
@@ -72,6 +73,19 @@ async def post_session(file: UploadFile | None = File(default=None)) -> CreateSe
     source = "upload" if file is not None else "fixture"
     session = await create_session(filename=filename, source_type=source, raw=raw)
     return CreateSessionResponse(session=session)
+
+
+@app.get("/api/sessions/{session_id}/tracks/{track_index}/trajectory.csv")
+def get_track_trajectory_csv(session_id: str, track_index: int = 0) -> PlainTextResponse:
+    session = store.get(session_id)
+    if not session:
+        raise HTTPException(404, "session not found")
+    if track_index < 0 or track_index >= len(session.tracks):
+        raise HTTPException(404, "track not found")
+    track = session.tracks[track_index]
+    if not track.trajectory_csv:
+        raise HTTPException(404, "trajectory CSV not available — run measure first")
+    return PlainTextResponse(track.trajectory_csv, media_type="text/csv")
 
 
 @app.get("/api/sessions/{session_id}", response_model=Session)
