@@ -21,6 +21,8 @@ export type Session = {
   id: string;
   status: string;
   mode: string;
+  video_file_id?: string | null;
+  meta_file_ids?: string[];
   scene?: {
     narration: string;
     sam_prompts: string[];

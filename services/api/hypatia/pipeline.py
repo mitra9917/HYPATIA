@@ -5,6 +5,8 @@ from pathlib import Path
 
 from .config import MEDIA_DIR, Settings, get_settings
 from .meta_client import MetaClient, upload_bytes_to_s3
+from .meta_files import ensure_session_video_file_id, primary_video_file_id
+from .model_router import ModelRouter
 from .models import (
     ImaginationFrame,
     Notebook,
@@ -51,7 +53,17 @@ async def create_session(*, filename: str | None, source_type: str, raw: bytes |
         mode=_mode_for(settings),
     )
     _event(session, "created", f"Session ready in {session.mode} mode")
-    return store.put(session)
+    session = store.put(session)
+    if path and session.mode == "live":
+        router = ModelRouter(settings, session_id=sid)
+        try:
+            ensure_session_video_file_id(session, router, settings=settings)
+        except Exception as exc:  # noqa: BLE001
+            session.meta_calls.append(
+                {"model": "files", "kind": "files.create", "ok": False, "error": str(exc)[:200]}
+            )
+        store.put(session)
+    return session
 
 
 async def run_full_pipeline(session_id: str, domain_hint: str | None = None) -> Session:
@@ -94,7 +106,10 @@ async def _measure(session: Session, client: MetaClient, settings: Settings) -> 
     # until real video decoding is wired for the uploaded file.
     if client.enabled and session.mode == "live":
         try:
-            _, log = client.segment_video_stub_prompt(prompts[0], file_id=session.video_file_id)
+            _, log = client.segment_video_stub_prompt(
+                prompts[0],
+                file_id=primary_video_file_id(session),
+            )
             session.meta_calls.append(log)
             _event(session, "measure", "SAM probe succeeded — using calibrated track extraction")
         except Exception as exc:  # noqa: BLE001
