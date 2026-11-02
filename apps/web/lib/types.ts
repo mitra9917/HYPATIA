@@ -17,6 +17,16 @@ export type ImaginationFrame = {
   source: string;
 };
 
+export type SessionEventPayload = {
+  event?: string;
+  session_id?: string;
+  stage?: string;
+  status?: string;
+  message?: string;
+  error?: string;
+  pipeline_stages?: string[];
+};
+
 export type Session = {
   id: string;
   status: string;
@@ -43,7 +53,7 @@ export type Session = {
     params: Record<string, number>;
     error_bars: Record<string, number>;
   } | null;
-  events: { stage: string; message: string }[];
+  events: SessionEventPayload[];
   meta_calls: Record<string, unknown>[];
   tracks?: {
     object_name: string;
@@ -58,4 +68,21 @@ export type Session = {
     frame_cost?: { frames_billed_estimate: number; scientific_fps: number } | null;
   }[];
   error?: string | null;
+};
+
+export type HealthInfo = {
+  ok: boolean;
+  service?: string;
+  fixture_mode?: boolean;
+  replay_mode?: boolean;
+  fixture_record?: boolean;
+  session_store?: string;
+  pipeline_stages?: string[];
+};
+
+export type LawSummary = {
+  session_id: string;
+  law_latex: string;
+  params: Record<string, number>;
+  mode: string;
 };
