@@ -1,13 +1,13 @@
 from __future__ import annotations
 
-from fastapi import FastAPI, File, HTTPException, UploadFile
+from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import get_settings
 from .glimmer import run_glimmer_swarm
 from .meta_client import MetaClient
 from .models import CreateSessionResponse, RunResponse, Session
-from .observer import run_observer
+from .orchestrator import PIPELINE_STAGES, StageGuardError, run_pipeline_from, run_pipeline_stage
 from .pipeline import create_session, run_full_pipeline
 from .store import store
 
@@ -29,6 +29,16 @@ app.add_middleware(
 )
 
 
+async def _run_stage(session_id: str, stage: str) -> RunResponse:
+    try:
+        session = await run_pipeline_stage(session_id, stage)
+    except StageGuardError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="session not found") from exc
+    return RunResponse(session=session)
+
+
 @app.get("/api/health")
 def health() -> dict:
     client = MetaClient(settings)
@@ -44,6 +54,7 @@ def health() -> dict:
         "service": "hypatia-api",
         "fixture_mode": settings.effective_fixture_mode,
         "model_router": settings.model_router(),
+        "pipeline_stages": list(PIPELINE_STAGES),
         "glimmer_provider": settings.glimmer_provider,
         "glimmer": glimmer_probe,
         "meta": client.health_ping() if settings.has_meta_key else {"meta": False, "reason": "no key"},
@@ -73,17 +84,50 @@ def get_session(session_id: str) -> Session:
 
 @app.post("/api/sessions/{session_id}/observe", response_model=RunResponse)
 async def observe_session(session_id: str) -> RunResponse:
-    session = store.get(session_id)
-    if not session:
-        raise HTTPException(404, "session not found")
-    session = await run_observer(session)
-    return RunResponse(session=session)
+    return await _run_stage(session_id, "observe")
+
+
+@app.post("/api/sessions/{session_id}/measure", response_model=RunResponse)
+async def measure_session(session_id: str) -> RunResponse:
+    return await _run_stage(session_id, "measure")
+
+
+@app.post("/api/sessions/{session_id}/hypothesize", response_model=RunResponse)
+async def hypothesize_session(session_id: str) -> RunResponse:
+    return await _run_stage(session_id, "hypothesize")
+
+
+@app.post("/api/sessions/{session_id}/imagine", response_model=RunResponse)
+async def imagine_session(session_id: str) -> RunResponse:
+    return await _run_stage(session_id, "imagine")
+
+
+@app.post("/api/sessions/{session_id}/experiment", response_model=RunResponse)
+async def experiment_session(session_id: str) -> RunResponse:
+    return await _run_stage(session_id, "experiment")
+
+
+@app.post("/api/sessions/{session_id}/accept", response_model=RunResponse)
+async def accept_session(session_id: str) -> RunResponse:
+    return await _run_stage(session_id, "accept")
 
 
 @app.post("/api/sessions/{session_id}/run", response_model=RunResponse)
-async def run_session(session_id: str, domain_hint: str | None = None) -> RunResponse:
+async def run_session(
+    session_id: str,
+    domain_hint: str | None = None,
+    from_stage: str | None = Query(default=None, description="Resume from stage (e.g. measure)"),
+) -> RunResponse:
     if not store.get(session_id):
         raise HTTPException(404, "session not found")
+    if from_stage:
+        if from_stage not in PIPELINE_STAGES:
+            raise HTTPException(422, detail=f"unknown from_stage; use one of {list(PIPELINE_STAGES)}")
+        try:
+            session = await run_pipeline_from(session_id, from_stage, domain_hint=domain_hint)
+        except StageGuardError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        return RunResponse(session=session)
     session = await run_full_pipeline(session_id, domain_hint=domain_hint)
     return RunResponse(session=session)
 
