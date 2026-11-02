@@ -16,12 +16,16 @@ from __future__ import annotations
 import base64
 import io
 import json
+import logging
 import time
 from typing import Any
 
 from openai import OpenAI
 
 from .config import Settings
+from .contributor_policy import spark_routing_tier
+
+logger = logging.getLogger(__name__)
 
 
 class MetaClient:
@@ -60,6 +64,16 @@ class MetaClient:
             payload["session_id"] = self.session_id
         if extra:
             payload.update(extra)
+        tier = spark_routing_tier(model)
+        if tier:
+            payload["spark_routing"] = tier
+            logger.info(
+                "meta_spark_call model=%s spark_routing=%s kind=%s session_id=%s",
+                model,
+                tier,
+                kind,
+                self.session_id or "-",
+            )
         return payload
 
     @staticmethod

@@ -37,6 +37,12 @@ bash scripts/smoke_health.sh  # pretty-print /api/health (10s demo check)
 python scripts/smoke_meta_api.py
 ```
 
+### Spark Contributor (optional cost routing)
+
+Set `META_USE_CONTRIBUTOR=true` in `.env` **only** for non-sensitive Observer loops (desk demos, synthetic tests). HYPATIA routes **Muse Spark Observer** to `muse-spark-1.3-contributor`. **Wonder, Image, and SAM never use Contributor.**
+
+Health exposes `contributor_policy` and logs `spark_routing=contributor|standard` on Spark API calls. The lab UI shows a banner when Contributor mode is active. See [`docs/CONTRIBUTOR_ROUTING.md`](docs/CONTRIBUTOR_ROUTING.md).
+
 ### Deploy (Meta partners first)
 
 ```bash

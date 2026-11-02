@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any
 
 from .config import Settings, get_settings
+from .contributor_policy import assert_standard_only, observer_spark_model
 from .meta_client import MetaClient
 
 
@@ -16,6 +17,9 @@ class ModelRouter:
 
     def __init__(self, settings: Settings | None = None, *, session_id: str | None = None) -> None:
         self.settings = settings or get_settings()
+        assert_standard_only(self.settings.meta_pi_model, "PI")
+        assert_standard_only(self.settings.meta_image_model, "Image")
+        assert_standard_only(self.settings.meta_sam_model, "SAM")
         self._client = MetaClient(self.settings, session_id=session_id)
 
     @property
@@ -40,7 +44,7 @@ class ModelRouter:
         json_schema: dict[str, Any],
     ) -> tuple[str, dict[str, Any]]:
         return self._client.respond_text(
-            model=self.settings.observer_model,
+            model=observer_spark_model(self.settings),
             input_payload=prompt,
             instructions=instructions,
             json_schema=json_schema,
@@ -68,7 +72,7 @@ class ModelRouter:
         else:
             input_payload = prompt
         return self._client.respond_text(
-            model=self.settings.observer_model,
+            model=observer_spark_model(self.settings),
             input_payload=input_payload,
             instructions=instructions,
             json_schema=json_schema,
