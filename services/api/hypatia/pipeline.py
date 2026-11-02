@@ -76,17 +76,25 @@ async def run_full_pipeline(session_id: str, domain_hint: str | None = None) -> 
 
 
 async def _observe(session: Session, client: MetaClient, settings: Settings) -> None:
+    from .pi import plan_pi_phase
+
+    plan = await plan_pi_phase(session, client, settings, "observe")
+    _event(session, "observe", str(plan.get("narration", "Observer pass"))[:240])
     await run_observer(session, settings)
 
 
 async def _measure(session: Session, client: MetaClient, settings: Settings) -> None:
     from .measurer import run_measurer
+    from .pi import plan_pi_phase
 
+    plan = await plan_pi_phase(session, client, settings, "measure")
+    _event(session, "measure", str(plan.get("narration", "Measurer pass"))[:240])
     await run_measurer(session, client, settings)
 
 
 async def _hypothesize(session: Session, client: MetaClient, settings: Settings) -> None:
-    from .theorist import run_theorist_swarm_and_score
+    from .pi import plan_pi_phase
+    from .pi_tools import execute_hypothesize_tools
 
     session.status = SessionStatus.hypothesizing
     _event(session, "hypothesize", f"Rival theories via {settings.glimmer_provider} swarm + held-out scoring")
@@ -95,21 +103,11 @@ async def _hypothesize(session: Session, client: MetaClient, settings: Settings)
     points = track.points if track else synthesize_pendulum_track()
     length = next((p.length_m for p in points if p.length_m), 0.45) or 0.45
 
+    plan = await plan_pi_phase(session, client, settings, "hypothesize")
+    _event(session, "hypothesize", str(plan.get("narration", "Theorist pass"))[:240])
+
     try:
-        session.hypotheses, swarm, glimmer_log = run_theorist_swarm_and_score(
-            settings,
-            points,
-            length,
-            domain_hint=session.domain_hint,
-        )
-        session.meta_calls.append(glimmer_log)
-        ids = [c.get("form_id") for c in swarm.get("candidates", [])[:5]]
-        _event(
-            session,
-            "hypothesize",
-            f"Glimmer ({swarm.get('provider')}): {len(swarm.get('candidates', []))} rivals "
-            f"pre-screened → held-out gate ({', '.join(str(i) for i in ids if i)})",
-        )
+        execute_hypothesize_tools(session, settings, plan, points, length)
     except Exception as exc:  # noqa: BLE001
         session.meta_calls.append(
             {
@@ -120,23 +118,7 @@ async def _hypothesize(session: Session, client: MetaClient, settings: Settings)
             }
         )
         session.hypotheses = fit_rival_hypotheses(points, length)
-        _event(session, "hypothesize", f"Glimmer unavailable ({exc}); fixture rivals only")
-
-    if client.enabled and session.mode in {"live", "hybrid"}:
-        try:
-            winner = next(h for h in session.hypotheses if h.status == "winner")
-            text, log = client.respond_text(
-                model=settings.meta_pi_model,
-                input_payload=(
-                    "You are HYPATIA's Principal Investigator. Briefly confirm why "
-                    f"this law wins on held-out prediction: {winner.form_latex} params={winner.params}"
-                ),
-                instructions="Reply in 2 short sentences for the lab notebook.",
-            )
-            session.meta_calls.append(log)
-            _event(session, "hypothesize", text.strip()[:240])
-        except Exception as exc:  # noqa: BLE001
-            session.meta_calls.append({"model": settings.meta_pi_model, "ok": False, "error": str(exc)[:160]})
+        _event(session, "hypothesize", f"Tooling fallback ({exc}); fixture rivals only")
 
     store.put(session)
 
@@ -178,23 +160,18 @@ async def _imagine(session: Session, client: MetaClient, settings: Settings) -> 
 
 
 async def _experiment(session: Session, client: MetaClient, settings: Settings) -> None:
+    from .pi import library_search_stub, plan_pi_phase
+
     session.status = SessionStatus.experimenting
     session.experiment = propose_experiment(session.hypotheses)
-    _event(session, "experiment", session.experiment.instruction)
 
-    if client.enabled and session.mode in {"live", "hybrid"}:
-        try:
-            text, log = client.respond_text(
-                model=settings.meta_pi_model,
-                input_payload=(
-                    "Phrase this next experiment for a student in one spoken sentence: "
-                    + session.experiment.instruction
-                ),
-            )
-            session.meta_calls.append(log)
-            _event(session, "experiment", text.strip()[:240])
-        except Exception:  # noqa: BLE001
-            pass
+    plan = await plan_pi_phase(session, client, settings, "experiment")
+    if "library_search" in (plan.get("tools") or []):
+        lib = library_search_stub(session)
+        session.meta_calls.append(
+            {"model": "library", "kind": "library_search", "ok": True, "matches": len(lib.get("matches", []))}
+        )
+    _event(session, "experiment", str(plan.get("narration", session.experiment.instruction))[:240])
     store.put(session)
 
 

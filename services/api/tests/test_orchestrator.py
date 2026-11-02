@@ -40,6 +40,20 @@ def test_hypothesize_before_measure_returns_422(client: TestClient) -> None:
     assert "measure" in r.json()["detail"].lower()
 
 
+def test_hypothesize_returns_ranked_rivals(client: TestClient) -> None:
+    sid = client.post("/api/sessions").json()["session"]["id"]
+    client.post(f"/api/sessions/{sid}/observe")
+    client.post(f"/api/sessions/{sid}/measure")
+    r = client.post(f"/api/sessions/{sid}/hypothesize")
+    assert r.status_code == 200
+    hyps = r.json()["session"]["hypotheses"]
+    assert len(hyps) >= 3
+    assert hyps[0]["status"] == "winner"
+    scores = [h["heldout_score"] for h in hyps]
+    assert scores == sorted(scores, reverse=True)
+    assert "hypothesize" in r.json()["session"]["pi_plans"]
+
+
 def test_fail_at_measure_then_resume(client: TestClient) -> None:
     sid = client.post("/api/sessions").json()["session"]["id"]
     client.post(f"/api/sessions/{sid}/observe")

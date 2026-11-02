@@ -95,6 +95,7 @@ class MetaClient:
         input_payload: list[dict[str, Any]] | str,
         instructions: str | None = None,
         json_schema: dict[str, Any] | None = None,
+        previous_response_id: str | None = None,
     ) -> tuple[str, dict[str, Any]]:
         if not self._client:
             raise RuntimeError("MODEL_API_KEY not set")
@@ -105,6 +106,8 @@ class MetaClient:
         }
         if instructions:
             kwargs["instructions"] = instructions
+        if previous_response_id:
+            kwargs["previous_response_id"] = previous_response_id
         if json_schema:
             kwargs["text"] = {
                 "format": {
@@ -121,7 +124,11 @@ class MetaClient:
                 model,
                 "responses",
                 started,
-                {"ok": True, **self._usage_fields(resp)},
+                {
+                    "ok": True,
+                    "response_id": getattr(resp, "id", None),
+                    **self._usage_fields(resp),
+                },
             )
             return text, log
         except Exception as exc:  # noqa: BLE001

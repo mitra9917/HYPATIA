@@ -123,6 +123,8 @@ class Session(BaseModel):
     notebook: Notebook | None = None
     events: list[dict[str, Any]] = Field(default_factory=list)
     meta_calls: list[dict[str, Any]] = Field(default_factory=list)
+    pi_response_id: str | None = None
+    pi_plans: dict[str, Any] = Field(default_factory=dict)
     error: str | None = None
 
 
