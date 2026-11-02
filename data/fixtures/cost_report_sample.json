@@ -1,0 +1,26 @@
+{
+  "sessions": [
+    {
+      "id": "sample-fixture-run",
+      "mode": "fixture",
+      "meta_calls": [
+        {"model": "fixture", "kind": "observer", "ok": true, "latency_ms": 12},
+        {"model": "sam-3.1", "kind": "sam", "ok": true, "frames": 120, "latency_ms": 800},
+        {"model": "muse-spark-1.3-contributor", "kind": "observer", "ok": true, "tokens": 2400, "latency_ms": 1100},
+        {"model": "muse-wonder-1.0", "kind": "pi", "ok": true, "tokens": 1800, "latency_ms": 2200},
+        {"model": "muse-image-1.0", "kind": "image", "ok": true, "image_spend_usd_est": 0.01, "latency_ms": 3500},
+        {"model": "stub", "kind": "glimmer", "ok": true, "latency_ms": 40}
+      ]
+    },
+    {
+      "id": "sample-live-rehearsal",
+      "mode": "hybrid",
+      "meta_calls": [
+        {"model": "muse-spark-1.3-contributor", "kind": "observer", "ok": true, "tokens": 3100, "latency_ms": 4200},
+        {"model": "sam-3.1", "kind": "sam", "ok": true, "frames": 450, "latency_ms": 5100},
+        {"model": "muse-wonder-1.0", "kind": "pi", "ok": true, "tokens": 4200, "latency_ms": 6800},
+        {"model": "muse-image-1.0", "kind": "image", "ok": true, "image_spend_usd_est": 0.02, "latency_ms": 9000}
+      ]
+    }
+  ]
+}

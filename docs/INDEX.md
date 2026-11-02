@@ -13,6 +13,10 @@ Read in this order before opening issues or coding:
 | 6 | [BUILD_PLAN.md](./BUILD_PLAN.md) | Phases, milestones, issue IDs, DoD |
 | 6b | [PLAYBOOK_ISSUE_MAP.md](./PLAYBOOK_ISSUE_MAP.md) | **Playbook # → GitHub issue** (daily build order) |
 | 7 | [DEPLOYMENT.md](./DEPLOYMENT.md) | Modal-first deploy (Vercel + GPU + R2/S3); AWS as later path |
+| 7b | [HACKATHON_ALIGNMENT.md](./HACKATHON_ALIGNMENT.md) | Official event gates + rubric mapping (Playbooks #62+) |
+| 7c | [SUBMISSION_PACK.md](./SUBMISSION_PACK.md) | Indie submission one-pager |
+| 7d | [META_EVIDENCE.md](./META_EVIDENCE.md) | Judge-facing Meta tooling table (Playbook #60) |
+| 7e | [FINALS_WARM.md](./FINALS_WARM.md) | Modal warm containers Nov 4–9 (Playbook #58) |
 | 8 | [EVALS.md](./EVALS.md) | Metrics and harness |
 | 9 | [RISKS.md](./RISKS.md) | Failures, kill order, live incident runbook |
 | 10 | [REPO_STRUCTURE.md](./REPO_STRUCTURE.md) | Monorepo layout |

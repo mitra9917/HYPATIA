@@ -9,9 +9,15 @@ Requires Modal token + secret `hypatia-secrets` with MODEL_API_KEY (and optional
 
 from __future__ import annotations
 
+import os
+
 import modal
 
 app = modal.App("hypatia")
+
+# Playbook #58 / issue #66 — set MODAL_FINALS_WARM=1 during Nov 4–9 judging only
+_FINALS_WARM = os.environ.get("MODAL_FINALS_WARM", "").lower() in ("1", "true", "yes")
+_ASGI_MIN_CONTAINERS = 1 if _FINALS_WARM else None
 
 weights = modal.Volume.from_name("hypatia-weights", create_if_missing=True)
 
@@ -55,6 +61,7 @@ image = (
     volumes={"/weights": weights},
     timeout=60 * 15,
     memory=4096,
+    **({"min_containers": _ASGI_MIN_CONTAINERS} if _ASGI_MIN_CONTAINERS else {}),
 )
 @modal.asgi_app()
 def fastapi_app():

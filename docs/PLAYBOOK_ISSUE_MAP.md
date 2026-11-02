@@ -46,7 +46,17 @@ Use **Playbook #** from the **[Build Playbook project](https://github.com/users/
 | **56** | [**64**](https://github.com/mitra9917/HYPATIA/issues/64) | P4.12 Demo reliability operator controls | done (#95) |
 | **57** | [**39**](https://github.com/mitra9917/HYPATIA/issues/39) | P4.6 Production deploy checklist | done (#95) |
 
-**Next up:** playbook **58+** (issues #66, #63, …).
+## Board rows 58–62
+
+| Playbook # | Issue | Title | Status |
+| ---: | ---: | --- | --- |
+| **58** | [**66**](https://github.com/mitra9917/HYPATIA/issues/66) | P4.14 Finals warm + health ping | this PR |
+| **59** | [**63**](https://github.com/mitra9917/HYPATIA/issues/63) | P4.11 GitHub Actions lint + fixture CI | this PR |
+| **60** | [**40**](https://github.com/mitra9917/HYPATIA/issues/40) | P4.7 Evals + Meta evidence in README | this PR |
+| **61** | [**67**](https://github.com/mitra9917/HYPATIA/issues/67) | P4.15 API cost report | this PR |
+| **62** | [**65**](https://github.com/mitra9917/HYPATIA/issues/65) | P4.13 Submission pack + landing | this PR |
+
+**Next up:** playbook **63+**.
 
 ---
 

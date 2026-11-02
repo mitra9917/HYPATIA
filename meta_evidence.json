@@ -1,0 +1,62 @@
+{
+  "project": "HYPATIA",
+  "hackathon": "Meta Global AI Developer Hackathon",
+  "track": "Indie developer",
+  "theme": "Push the Frontier",
+  "event_url": "https://cerebralvalley.ai/e/meta-ai-developer-hackathon",
+  "meta_model_api_base": "https://api.meta.ai/v1",
+  "capabilities": [
+    {
+      "id": "sam_measure",
+      "model": "sam-3.1",
+      "path": "services/api/hypatia/measurer.py",
+      "demo_mmss": "0:15-0:45"
+    },
+    {
+      "id": "spark_observer",
+      "model": "muse-spark-1.3",
+      "path": "services/api/hypatia/observer.py",
+      "demo_mmss": "0:00-0:15"
+    },
+    {
+      "id": "wonder_pi",
+      "model": "muse-wonder-1.0",
+      "path": "services/api/hypatia/pi.py",
+      "demo_mmss": "0:45-1:15"
+    },
+    {
+      "id": "muse_image_ghost",
+      "model": "muse-image-1.0",
+      "path": "services/api/hypatia/pipeline.py",
+      "demo_mmss": "1:15-1:45"
+    },
+    {
+      "id": "glimmer_swarm",
+      "model": "muse-glimmer-open-weights",
+      "path": "services/api/hypatia/glimmer.py",
+      "provider_env": "GLIMMER_PROVIDER"
+    },
+    {
+      "id": "voice_transcribe",
+      "model": "muse-voice-transcribe-1.0",
+      "path": "services/api/hypatia/voice.py"
+    },
+    {
+      "id": "toolsmith",
+      "model": "muse-wonder-1.0",
+      "path": "services/api/hypatia/toolsmith/runner.py",
+      "route": "POST /api/toolsmith/test-promoted"
+    },
+    {
+      "id": "veritas",
+      "path": "services/api/hypatia/veritas.py",
+      "route": "POST /api/veritas/analyze"
+    }
+  ],
+  "validation_scripts": [
+    "scripts/verify_playbook_58_62.sh",
+    "scripts/smoke_playbook_52_57.sh",
+    "python -m evals.run --suite desk-mechanics --mode fixture",
+    "python scripts/cost_report.py"
+  ]
+}

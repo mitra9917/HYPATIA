@@ -101,17 +101,18 @@ Use for scaffolding agents, tests, UI. Capture a 10–15s screen recording of Mu
 
 ## 5. Evidence pack for judges (README section)
 
-Publish a table:
+**Canonical table:** [`docs/META_EVIDENCE.md`](./META_EVIDENCE.md) (paths + demo timestamps).  
+**Machine-readable:** [`meta_evidence.json`](../meta_evidence.json).
 
 | Capability | Meta tool | File / module | Demo timestamp |
 | --- | --- | --- | --- |
-| Open-vocab measure | SAM 3.1 | `packages/vision` | 0:15–0:45 |
-| Rival theories + next experiment | Wonder | `packages/agents/pi` | 0:45–1:15 |
-| Ghost imagination | Muse Image + SAM audit | `packages/imagination` | 1:15–1:45 |
-| New domain zero new code | Spark Observer + Toolsmith | cell clip | 1:45–2:15 |
-| Physics watermark | VERITAS module | fake fall clip | 2:15–2:35 |
-| Self-improve | Law/tool library | chart | 2:35–2:50 |
-| Built with Muse Code | process | B-roll | credits |
+| Open-vocab measure | SAM 3.1 | `services/api/hypatia/measurer.py` | 0:15–0:45 |
+| Rival theories + next experiment | Wonder | `services/api/hypatia/pi.py` | 0:45–1:15 |
+| Ghost imagination | Muse Image + SAM audit | `services/api/hypatia/pipeline.py` | 1:15–1:45 |
+| New domain zero new code | Spark Observer + Toolsmith | `domains/cells.py`, toolsmith | 1:45–2:15 |
+| Physics watermark | VERITAS module | `services/api/hypatia/veritas.py` | 2:15–2:35 |
+| Self-improve | Law/tool library | `GET /api/library/laws`, `/api/library/tools` | 2:35–2:50 |
+| Built with Muse Code | process | `demo/` B-roll | credits |
 
 ## 6. Anti-patterns (do not do)
 
