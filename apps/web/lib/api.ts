@@ -37,7 +37,39 @@ export async function health(): Promise<HealthInfo> {
 
 export type SessionSource = "fixture" | "upload" | "webcam";
 
-export async function createSession(file?: File, source?: SessionSource): Promise<Session> {
+export type OpsMode = "fixture" | "live" | "hybrid";
+
+export async function setOpsMode(mode: OpsMode): Promise<void> {
+  await parse(
+    await fetch(apiUrl("/api/ops/mode"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ mode }),
+    }),
+  );
+}
+
+export function notebookDownloadUrl(sessionId: string): string {
+  return apiUrl(`/api/sessions/${sessionId}/notebook.md`);
+}
+
+export function voiceRealtimeUrl(sessionId?: string): string {
+  const q = sessionId ? `?session_id=${encodeURIComponent(sessionId)}` : "";
+  const path = `/api/voice/realtime${q}`;
+  const base = process.env.NEXT_PUBLIC_API_ORIGIN?.replace(/\/$/, "");
+  if (typeof window !== "undefined") {
+    if (base) return `${base.replace(/^http/i, "ws")}${path}`;
+    const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
+    return `${proto}//${window.location.host}${path}`;
+  }
+  return path;
+}
+
+export async function createSession(
+  file?: File,
+  source?: SessionSource,
+  opts?: { uploadConsent?: boolean },
+): Promise<Session> {
   if (!file) {
     const res = await fetch(apiUrl("/api/sessions"), { method: "POST" });
     const data = await parse<{ session: Session }>(res);
@@ -48,6 +80,8 @@ export async function createSession(file?: File, source?: SessionSource): Promis
   if (source === "webcam" || source === "upload") {
     body.append("source_type", source);
   }
+  body.append("upload_consent", opts?.uploadConsent ? "true" : "false");
+  body.append("consent_version", "hypatia-demo-2026");
   const res = await fetch(apiUrl("/api/sessions"), { method: "POST", body });
   const data = await parse<{ session: Session }>(res);
   return data.session;

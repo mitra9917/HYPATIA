@@ -22,17 +22,27 @@ from .observer import run_observer
 from .store import store
 
 
+from .runtime_ops import resolve_fixture_mode
+
+
 def _event(session: Session, stage: str, message: str) -> None:
     session.events.append({"stage": stage, "message": message})
 
 
 def _mode_for(settings: Settings) -> str:
-    if settings.effective_fixture_mode:
+    if resolve_fixture_mode(settings):
         return "fixture"
     return "live"
 
 
-async def create_session(*, filename: str | None, source_type: str, raw: bytes | None) -> Session:
+async def create_session(
+    *,
+    filename: str | None,
+    source_type: str,
+    raw: bytes | None,
+    upload_consent: bool = False,
+    consent_version: str = "hypatia-demo-2026",
+) -> Session:
     settings = get_settings()
     sid = str(uuid.uuid4())
     path = None
@@ -52,9 +62,27 @@ async def create_session(*, filename: str | None, source_type: str, raw: bytes |
         source_type=source_type,
         filename=path or filename,
         mode=_mode_for(settings),
+        upload_consent=upload_consent,
+        consent_version=consent_version,
     )
+    if upload_consent:
+        from datetime import datetime, timezone
+
+        session.upload_consent = True
+        session.consent_at = datetime.now(timezone.utc).isoformat()
     _event(session, "created", f"Session ready in {session.mode} mode")
     session = store.put(session)
+    from .pi import library_search_stub
+
+    session.domain_hint = session.domain_hint or "mechanics.pendulum"
+    lib = library_search_stub(session)
+    if lib.get("matches"):
+        session.library_hint = {
+            "message": "Prior accepted law in library — compare rivals faster this session.",
+            "matches": lib["matches"][:3],
+        }
+        _event(session, "library", session.library_hint["message"])
+        store.put(session)
     if path and session.mode == "live":
         router = ModelRouter(settings, session_id=sid)
         try:

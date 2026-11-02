@@ -477,6 +477,21 @@ input {
   font-family: var(--font-body);
 }
 
+.law-chart__bar {
+  height: 0.45rem;
+  background: rgba(61, 255, 181, 0.55);
+  border-radius: 4px;
+  min-width: 4%;
+}
+
+.law-chart__row {
+  display: grid;
+  grid-template-columns: 5rem 1fr;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.35rem;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before {

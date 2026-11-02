@@ -139,6 +139,10 @@ class Session(BaseModel):
     pi_response_id: str | None = None
     pi_plans: dict[str, Any] = Field(default_factory=dict)
     error: str | None = None
+    upload_consent: bool = False
+    consent_version: str = "hypatia-demo-2026"
+    consent_at: str | None = None
+    library_hint: dict[str, Any] | None = None
 
 
 class CreateSessionResponse(BaseModel):

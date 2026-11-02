@@ -80,6 +80,8 @@ export type Session = {
     frame_cost?: { frames_billed_estimate: number; scientific_fps: number } | null;
   }[];
   error?: string | null;
+  upload_consent?: boolean;
+  library_hint?: { message?: string; matches?: { law_latex: string; session_id: string }[] } | null;
 };
 
 export type HealthInfo = {
@@ -89,6 +91,13 @@ export type HealthInfo = {
   replay_mode?: boolean;
   fixture_record?: boolean;
   session_store?: string;
+  ops?: {
+    ops_mode?: string;
+    ops_mode_override?: string | null;
+    fixture_mode?: boolean;
+    hybrid_fallback_enabled?: boolean;
+    meta_key_present?: boolean;
+  };
   pipeline_stages?: string[];
   model_router?: {
     use_contributor?: boolean;
@@ -106,4 +115,6 @@ export type LawSummary = {
   law_latex: string;
   params: Record<string, number>;
   mode: string;
+  stages_completed?: number;
+  error_bars?: Record<string, number>;
 };
