@@ -12,7 +12,7 @@ VIDEO_DIR = DATA_DIR / "videos"
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    model_config = SettingsConfigDict(env_file=str(ROOT / ".env"), extra="ignore")
 
     model_api_key: str = ""
     meta_base_url: str = "https://api.meta.ai/v1"
@@ -56,6 +56,18 @@ class Settings(BaseSettings):
         if self.fixture_mode:
             return True
         return not self.has_meta_key
+
+    def model_router(self) -> dict[str, str | bool]:
+        """Hosted Meta model IDs for health / debugging (no secrets)."""
+        return {
+            "base_url": self.meta_base_url,
+            "observer": self.observer_model,
+            "pi": self.meta_pi_model,
+            "image": self.meta_image_model,
+            "sam": self.meta_sam_model,
+            "voice": self.meta_voice_model,
+            "use_contributor": self.meta_use_contributor,
+        }
 
 
 @lru_cache

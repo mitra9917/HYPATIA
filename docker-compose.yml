@@ -1,4 +1,20 @@
 services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: hypatia
+      POSTGRES_PASSWORD: hypatia
+      POSTGRES_DB: hypatia
+    ports:
+      - "5432:5432"
+    volumes:
+      - hypatia_pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hypatia -d hypatia"]
+      interval: 5s
+      timeout: 3s
+      retries: 8
+
   api:
     build:
       context: .
@@ -6,7 +22,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      FIXTURE_MODE: "true"
+      FIXTURE_MODE: "${FIXTURE_MODE:-true}"
       CORS_ORIGINS: "http://localhost:3000,http://127.0.0.1:3000"
       MODEL_API_KEY: ${MODEL_API_KEY:-}
       META_BASE_URL: ${META_BASE_URL:-https://api.meta.ai/v1}
@@ -15,17 +31,37 @@ services:
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
       S3_BUCKET: ${S3_BUCKET:-}
+      DATABASE_URL: postgresql://hypatia:hypatia@db:5432/hypatia
     volumes:
       - ./data:/app/data
       - ./services/api/hypatia:/app/hypatia
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'python -c "import urllib.request; urllib.request.urlopen(''http://127.0.0.1:8000/api/health'')"',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 25s
 
   web:
     build:
       context: ./apps/web
       dockerfile: Dockerfile
+      args:
+        API_ORIGIN: http://api:8000
     ports:
       - "3000:3000"
     environment:
       API_ORIGIN: http://api:8000
     depends_on:
-      - api
+      api:
+        condition: service_healthy
+
+volumes:
+  hypatia_pg:

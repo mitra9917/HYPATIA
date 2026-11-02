@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  api-scaffold:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: services/api
+    env:
+      PYTHONPATH: .
+      FIXTURE_MODE: "true"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: services/api/requirements.txt
+      - name: Install API deps
+        run: pip install -r requirements.txt pytest
+      - name: P1.1 scaffold tests
+        run: pytest tests/test_scaffold.py -q
+
+  web-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+      - name: Build Next.js lab UI
+        working-directory: apps/web
+        run: npm ci && npm run build
+        env:
+          API_ORIGIN: http://127.0.0.1:8000
