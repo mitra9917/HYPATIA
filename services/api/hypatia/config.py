@@ -4,7 +4,16 @@ from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-ROOT = Path(__file__).resolve().parents[3]
+def _repo_root() -> Path:
+    """Repo root in dev (services/api/hypatia → HYPATIA/) or container (/app/data)."""
+    here = Path(__file__).resolve()
+    for base in (here.parent, *here.parents):
+        if (base / "data" / "fixtures").is_dir():
+            return base
+    return here.parents[3]
+
+
+ROOT = _repo_root()
 DATA_DIR = ROOT / "data"
 FIXTURE_DIR = DATA_DIR / "fixtures"
 MEDIA_DIR = DATA_DIR / "media"

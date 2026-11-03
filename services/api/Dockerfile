@@ -9,7 +9,8 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 
 COPY services/api/migrations /app/migrations
 COPY services/api/hypatia /app/hypatia
+COPY data /app/data
 ENV PYTHONPATH=/app
 ENV PORT=8000
 EXPOSE 8000
-CMD ["uvicorn", "hypatia.app:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["sh", "-c", "exec uvicorn hypatia.app:app --host 0.0.0.0 --port ${PORT:-8000}"]
