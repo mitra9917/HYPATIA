@@ -15,7 +15,7 @@ set +a
 unset AWS_PROFILE
 
 REGION="${AWS_REGION:-ap-south-1}"
-ITYPE="${HYPATIA_EC2_TYPE:-t3.medium}"
+
 BRANCH="${HYPATIA_GIT_BRANCH:-main}"
 REPO_URL="${HYPATIA_GIT_URL:-https://github.com/mitra9917/HYPATIA.git}"
 WEB="${VERCEL_PRODUCTION_URL:-https://hypatia-chi.vercel.app}"
@@ -106,13 +106,29 @@ docker run -d --name caddy --restart always --network host \
   -v /opt/Caddyfile:/etc/caddy/Caddyfile -v caddy_data:/data caddy:2
 EOF
 
-echo "Launching $ITYPE..." >&2
-IID="$($AWS ec2 run-instances --image-id "$AMI" --instance-type "$ITYPE" \
-  --security-group-ids "$SG" --user-data "file://$UD" \
-  --block-device-mappings 'DeviceName=/dev/xvda,Ebs={VolumeSize=30,VolumeType=gp3}' \
-  --metadata-options 'HttpTokens=required,HttpEndpoint=enabled' \
-  --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=$NAME}]" \
-  --query 'Instances[0].InstanceId' --output text)"
+# Free-plan AWS accounts only allow "free-tier eligible" types, so try several.
+# Set HYPATIA_EC2_TYPE to force one. The first with 4 GB+ RAM is the safest for the API.
+if [[ -n "${HYPATIA_EC2_TYPE:-}" ]]; then
+  CANDIDATES=("$HYPATIA_EC2_TYPE")
+else
+  CANDIDATES=(c7i-flex.large m7i-flex.large t3.small t3.medium t3.micro)
+fi
+IID=""
+for ITYPE in "${CANDIDATES[@]}"; do
+  echo "Trying $ITYPE..." >&2
+  if IID="$($AWS ec2 run-instances --image-id "$AMI" --instance-type "$ITYPE" \
+    --security-group-ids "$SG" --user-data "file://$UD" \
+    --block-device-mappings 'DeviceName=/dev/xvda,Ebs={VolumeSize=30,VolumeType=gp3}' \
+    --metadata-options 'HttpTokens=required,HttpEndpoint=enabled' \
+    --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=$NAME}]" \
+    --query 'Instances[0].InstanceId' --output text 2>/tmp/hypatia-run-instances.err)"; then
+    echo "Launched $ITYPE as $IID" >&2
+    break
+  fi
+  echo "  $ITYPE not allowed: $(tail -c 160 /tmp/hypatia-run-instances.err | tr '\n' ' ')" >&2
+  IID=""
+done
+[[ -n "$IID" ]] || { echo "No instance type could be launched. See /tmp/hypatia-run-instances.err" >&2; exit 1; }
 $AWS ec2 wait instance-running --instance-ids "$IID"
 $AWS ec2 associate-address --instance-id "$IID" --allocation-id "$EIP_ALLOC" >/dev/null
 echo "Instance $IID is up at $IP. Waiting for the image build and HTTPS (about 5-10 min)..." >&2
