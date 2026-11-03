@@ -12,14 +12,6 @@ Point a camera at something that moves. HYPATIA watches it, proposes rival laws,
 
 Built for the **[Meta Global AI Developer Hackathon](https://cerebralvalley.ai/e/meta-ai-developer-hackathon)** (also listed at [dev.meta.ai/events/global-hackathon](https://dev.meta.ai/events/global-hackathon)). **Indie track.** Theme: **Push the Frontier.**
 
-| | |
-| --- | --- |
-| Submission deadline | **4 Nov 2026, 9:00 PM ET** (5 Nov 2026, 7:30 AM IST) |
-| Default run mode | **Fixture replay.** No Meta key required. Live calls are opt-in. |
-| Public demo URL | Not set in this repo. Deploy notes: [`docs/PRODUCTION_DEPLOY_CHECKLIST.md`](docs/PRODUCTION_DEPLOY_CHECKLIST.md). |
-| Demo video | Not committed. Shot list: [`demo/DEMO_SCRIPT.md`](demo/DEMO_SCRIPT.md). |
-| License file | **None in the tree.** The project text says MIT is intended. See [License](#license). |
-| Deeper docs | [`docs/INDEX.md`](docs/INDEX.md) · [`docs/HACKATHON_ALIGNMENT.md`](docs/HACKATHON_ALIGNMENT.md) · [`docs/META_EVIDENCE.md`](docs/META_EVIDENCE.md) |
 
 The tagline used in the lab and in [`docs/PRODUCT.md`](docs/PRODUCT.md) is: *"We gave Meta's models a camera and the scientific method. It rediscovered Galileo on my desk in 90 seconds."* That sentence is a pitch line. This repository does not contain a timed log of a 90-second desk run.
 
