@@ -206,6 +206,13 @@ async def _imagine(session: Session, client: MetaClient, settings: Settings) -> 
             }
         )
 
+    if not image_bytes:
+        from .imagination_media import render_geometric_frame
+
+        image_bytes = render_geometric_frame(
+            [(float(p.x_m), float(p.y_m)) for p in points if p.x_m is not None and p.y_m is not None],
+            [(float(g["x_m"]), float(g["y_m"])) for g in ghost],
+        )
     frame_uri = save_imagination_frame(session.id, image_bytes, index=0)
     next_state = state_at_delta(points, winner, 0.5)
     length = float(next_state.get("length_m") or winner.params.get("L") or 0.45)

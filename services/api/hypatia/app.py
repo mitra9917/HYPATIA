@@ -176,7 +176,23 @@ def get_imagination_frame(session_id: str, index: int = 0) -> FileResponse:
         raise HTTPException(404, "session not found")
     path = imagination_frame_path(session_id, index)
     if not path.is_file():
-        raise HTTPException(404, "ghost frame not available — run imagine first")
+        # Local disk is ephemeral (restarts wipe it): rebuild the geometric ghost from the stored session.
+        from .imagination_media import render_geometric_frame, save_imagination_frame
+        from .predictor import forward_polyline
+
+        winner = next((h for h in session.hypotheses if h.status == "winner"), None)
+        track = session.tracks[0] if session.tracks else None
+        if not (winner and track and track.points):
+            raise HTTPException(404, "ghost frame not available — run imagine first")
+        ghost = forward_polyline(track.points, winner)
+        save_imagination_frame(
+            session_id,
+            render_geometric_frame(
+                [(float(p.x_m), float(p.y_m)) for p in track.points if p.x_m is not None and p.y_m is not None],
+                [(float(g["x_m"]), float(g["y_m"])) for g in ghost],
+            ),
+            index=index,
+        )
     return FileResponse(path, media_type="image/png")
 
 
