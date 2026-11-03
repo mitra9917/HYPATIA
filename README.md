@@ -615,41 +615,6 @@ Milestone objects on GitHub are still `open` even where every child issue is clo
 | [M3 — Ghost and experiment](https://github.com/mitra9917/HYPATIA/milestone/4) | Ghost, experiment, voice routes | 11 closed, 0 open |
 | [M4 — Deploy, evals, submit](https://github.com/mitra9917/HYPATIA/milestone/5) | Public URL, eval table, 3-minute video, form | 11 closed, 5 open (below) |
 
-### Still open on GitHub
-
-| Issue | Playbook # | Board status | What is left |
-| --- | ---: | --- | --- |
-| [#41](https://github.com/mitra9917/HYPATIA/issues/41) | 63 | Up next | Record and edit the 3-minute demo |
-| [#42](https://github.com/mitra9917/HYPATIA/issues/42) | 64 | Up next | Submission form and open-source checklist |
-| [#43](https://github.com/mitra9917/HYPATIA/issues/43) | 65 | Up next | Short public clip |
-| [#38](https://github.com/mitra9917/HYPATIA/issues/38) | 66 | Up next | Stretch: Wonder computer use on a PhET pendulum |
-| [#68](https://github.com/mitra9917/HYPATIA/issues/68) | 67 | Up next | Stretch: PhET sandbox harness, only if computer use ships |
-| [#44](https://github.com/mitra9917/HYPATIA/issues/44) | 1 | Done on the board, **open** as an issue | Living checklist that every Meta row is either verified live or honestly marked fixture |
-
-### Closed in git, still Up next or blank on the board
-
-These issues are **closed**. The board had not moved them to Done at query time. Code for them is on `main` (pull requests [#95](https://github.com/mitra9917/HYPATIA/pull/95) and [#96](https://github.com/mitra9917/HYPATIA/pull/96), and earlier). "Closed" does not mean the live Meta call was verified in this README pass.
-
-| Issue | Playbook # | Board status | What landed |
-| --- | ---: | --- | --- |
-| [#8](https://github.com/mitra9917/HYPATIA/issues/8) | 11 | Up next | Closed as skipped. Spark Open is not integrated. |
-| [#25](https://github.com/mitra9917/HYPATIA/issues/25) | 38 | blank | Eval catalog runner under `evals/`. See the caveat above. |
-| [#34](https://github.com/mitra9917/HYPATIA/issues/34) | 52 | blank | Toolsmith **local subprocess** test, not a Modal network-isolated sandbox. |
-| [#66](https://github.com/mitra9917/HYPATIA/issues/66) | 58 | Up next | `MODAL_FINALS_WARM` and `warm-health.yml` |
-| [#63](https://github.com/mitra9917/HYPATIA/issues/63) | 59 | Up next | Fixture pytest and web build in CI. Modal deploy on push is not unconditional. |
-| [#40](https://github.com/mitra9917/HYPATIA/issues/40) | 60 | Up next | `docs/META_EVIDENCE.md`, `meta_evidence.json`, eval summary |
-| [#67](https://github.com/mitra9917/HYPATIA/issues/67) | 61 | Up next | `scripts/cost_report.py` on a sample fixture |
-| [#65](https://github.com/mitra9917/HYPATIA/issues/65) | 62 | Up next | Submission pack docs and a banner component |
-
-Playbooks 1–62 are marked done in [`docs/PLAYBOOK_ISSUE_MAP.md`](docs/PLAYBOOK_ISSUE_MAP.md) through pull request [#96](https://github.com/mitra9917/HYPATIA/pull/96). The next playbook numbers in that doc are 63 and up (the open issues in the table above).
-
-### Team workflow
-
-- One playbook card at a time, lowest number that is actually unfinished.
-- Branches in this repo follow `cursor/<topic>-db99` (see [`AGENTS.md`](AGENTS.md)).
-- Pull requests land on `main`. Recent merged ranges include [#92](https://github.com/mitra9917/HYPATIA/pull/92) through [#96](https://github.com/mitra9917/HYPATIA/pull/96).
-- CI on pull requests runs fixture tests only.
-
 ---
 
 ## Team and contributing
