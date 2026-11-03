@@ -52,4 +52,5 @@ def ops_mode_summary(settings: Settings) -> dict[str, object]:
         "fixture_mode": resolve_fixture_mode(settings),
         "hybrid_fallback_enabled": mode == OpsMode.hybrid,
         "meta_key_present": settings.has_meta_key,
+        "locked": settings.ops_mode_locked,
     }

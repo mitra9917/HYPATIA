@@ -9,6 +9,7 @@ type Props = {
     ops_mode_override?: string | null;
     fixture_mode?: boolean;
     hybrid_fallback_enabled?: boolean;
+    locked?: boolean;
   };
   onModeChange?: () => void;
 };
@@ -41,7 +42,8 @@ export function OpsModeBanner({ ops, onModeChange }: Props) {
             key={m}
             type="button"
             className={`btn secondary${mode === m ? " winner" : ""}`}
-            disabled={busy || mode === m}
+            disabled={busy || mode === m || Boolean(ops?.locked)}
+            title={ops?.locked ? "Mode is locked on this public deployment" : undefined}
             onClick={() => void flip(m)}
           >
             {m}

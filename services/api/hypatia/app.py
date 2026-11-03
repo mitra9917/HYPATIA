@@ -144,6 +144,8 @@ class OpsModeBody(BaseModel):
 @app.post("/api/ops/mode")
 def post_ops_mode(body: OpsModeBody) -> dict:
     """Flip fixture ↔ live ↔ hybrid without redeploy (Playbook #45 / #33)."""
+    if settings.ops_mode_locked:
+        raise HTTPException(status_code=403, detail="ops mode is locked on this deployment")
     if body.mode in (OpsMode.live, OpsMode.hybrid) and not settings.has_meta_key:
         raise HTTPException(status_code=422, detail="MODEL_API_KEY required for live/hybrid ops mode")
     set_ops_mode(body.mode)

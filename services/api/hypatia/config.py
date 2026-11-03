@@ -46,6 +46,8 @@ class Settings(BaseSettings):
 
     fixture_mode: bool = True
     fixture_record: bool = False
+    # Public deploys: stop anonymous visitors flipping the global ops mode (live can hang for everyone).
+    ops_mode_locked: bool = False
     cors_origins: str = "*"
     port: int = 8000
 
